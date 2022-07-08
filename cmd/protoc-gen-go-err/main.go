@@ -1,16 +1,27 @@
 package main
 
 import (
+	"flag"
+
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
+var (
+	flags       flag.FlagSet
+	optEnumName string
+)
+
 func main() {
-	protogen.Options{}.Run(generate)
+	flags.StringVar(&optEnumName, "enum_name", "", "generate codes for enums by the name")
+	protogen.Options{ParamFunc: flags.Set}.Run(generate)
 }
 
 func generate(plugin *protogen.Plugin) error {
 	for _, file := range plugin.Files {
 		if !file.Generate {
+			continue
+		}
+		if skipFile(file) {
 			continue
 		}
 
@@ -25,6 +36,9 @@ func generate(plugin *protogen.Plugin) error {
 		g.P()
 
 		for _, enum := range file.Enums {
+			if skipEnum(enum) {
+				continue
+			}
 			// implement error interface
 			g.P("func (x ", enum.Desc.Name(), ") Error() string {")
 			g.P("return x.String()")
@@ -42,4 +56,25 @@ func generate(plugin *protogen.Plugin) error {
 		}
 	}
 	return nil
+}
+
+func skipEnum(enum *protogen.Enum) bool {
+	// do not skip if enum name is not specified
+	if len(optEnumName) == 0 {
+		return false
+	}
+	return string(enum.Desc.Name()) != optEnumName
+}
+
+func skipFile(file *protogen.File) bool {
+	// do not skip if enum name is not specified
+	if len(optEnumName) == 0 {
+		return false
+	}
+	for _, e := range file.Enums {
+		if !skipEnum(e) {
+			return false
+		}
+	}
+	return true
 }

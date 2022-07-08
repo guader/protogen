@@ -6,7 +6,7 @@ build:
 debug:
 		@protoc -I ./debug/pb \
 				--go_out ./debug/pb --go_opt paths=source_relative \
-				--go-err_out ./debug/pb --go-err_opt paths=source_relative \
+				--go-err_out ./debug/pb --go-err_opt paths=source_relative,enum_name=Code \
 				./debug/pb/*.proto
 
 .PHONY: all
