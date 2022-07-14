@@ -28,8 +28,8 @@ type generator interface {
 }
 
 func main() {
-	flags.StringVar(&flagPlugins, "plugins", "", "err+grpcStatus+number+validation")
-	flags.StringVar(&flagEnums, "enums", "", "generate code for enums of specified names, generate for all enums if not specified. example: A+B, generate code for enum A and B")
+	flags.StringVar(&flagPlugins, "plugins", "", "plugins for code generation, example: err+number, available: err, grpcStatus, number, validation.")
+	flags.StringVar(&flagEnums, "enums", "", "generate code for enums of specified names, for all if not specified. example: A+B, generate code for enum A and B.")
 	protogen.Options{ParamFunc: flags.Set}.Run(generate)
 }
 
