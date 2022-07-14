@@ -6,10 +6,6 @@ import (
 
 type Validation struct{}
 
-func (gen *Validation) Version() string {
-	return "v0.0.1"
-}
-
 func (gen *Validation) GeneratedFilenameSuffix() string {
 	return ".pb.validation.go"
 }

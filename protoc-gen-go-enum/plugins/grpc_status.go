@@ -6,10 +6,6 @@ import (
 
 type GrpcStatus struct{}
 
-func (gen *GrpcStatus) Version() string {
-	return "v0.0.1"
-}
-
 func (gen *GrpcStatus) GeneratedFilenameSuffix() string {
 	return ".pb.grpc_status.go"
 }

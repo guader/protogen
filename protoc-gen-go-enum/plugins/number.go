@@ -6,10 +6,6 @@ import (
 
 type Number struct{}
 
-func (gen *Number) Version() string {
-	return "v0.0.1"
-}
-
 func (gen *Number) GeneratedFilenameSuffix() string {
 	return ".pb.number.go"
 }

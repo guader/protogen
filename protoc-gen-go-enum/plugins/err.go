@@ -6,10 +6,6 @@ import (
 
 type Err struct{}
 
-func (gen *Err) Version() string {
-	return "v0.0.1"
-}
-
 func (gen *Err) GeneratedFilenameSuffix() string {
 	return ".pb.err.go"
 }
