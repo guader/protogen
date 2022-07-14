@@ -7,7 +7,7 @@ import (
 type Validation struct{}
 
 func (gen *Validation) GeneratedFilenameSuffix() string {
-	return ".pb.validation.go"
+	return ".pb.enum.validation.go"
 }
 
 func (gen *Validation) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {

@@ -7,7 +7,7 @@ import (
 type Err struct{}
 
 func (gen *Err) GeneratedFilenameSuffix() string {
-	return ".pb.err.go"
+	return ".pb.enum.err.go"
 }
 
 func (gen *Err) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {

@@ -7,7 +7,7 @@ import (
 type GrpcStatus struct{}
 
 func (gen *GrpcStatus) GeneratedFilenameSuffix() string {
-	return ".pb.grpc_status.go"
+	return ".pb.enum.grpc_status.go"
 }
 
 func (gen *GrpcStatus) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {
