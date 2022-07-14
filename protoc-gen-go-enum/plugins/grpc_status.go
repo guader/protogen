@@ -11,7 +11,7 @@ func (gen *GrpcStatus) Version() string {
 }
 
 func (gen *GrpcStatus) GeneratedFilenameSuffix() string {
-	return ".grpc_status.go"
+	return ".pb.grpc_status.go"
 }
 
 func (gen *GrpcStatus) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {

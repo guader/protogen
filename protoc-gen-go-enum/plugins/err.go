@@ -11,7 +11,7 @@ func (gen *Err) Version() string {
 }
 
 func (gen *Err) GeneratedFilenameSuffix() string {
-	return ".err.go"
+	return ".pb.err.go"
 }
 
 func (gen *Err) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {

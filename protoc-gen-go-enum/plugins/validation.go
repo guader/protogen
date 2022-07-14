@@ -11,7 +11,7 @@ func (gen *Validation) Version() string {
 }
 
 func (gen *Validation) GeneratedFilenameSuffix() string {
-	return ".validation.go"
+	return ".pb.validation.go"
 }
 
 func (gen *Validation) Generate(g *protogen.GeneratedFile, enums []*protogen.Enum) error {
