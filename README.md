@@ -36,7 +36,7 @@ protoc -I ./pb \
 
 - `plugins`: required, a list of plugins split by `+`, generate nothing if not specified.
     - `err`: implement `error` interface for enum, `enum.String()` as the error message.
-    - `grpcStatus`: convert enum into grpc errors, `int32(enum)` as the code.
+    - `grpcStatus`: convert enum into grpc error, `int32(enum)` as the code.
     - `number`: convert enum into `int32` and `int64`.
     - `validation`: verify whether the enum is in a valid range.
-- `enums`: optional, a list of enums split by `+` for code generation, generate for all enums if not specified.
+- `enums`: optional, a list of enums split by `+`, generate for all enums if not specified.
