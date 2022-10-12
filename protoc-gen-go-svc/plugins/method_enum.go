@@ -15,7 +15,7 @@ func (gen *MethodEnum) GeneratedFilenameSuffix() string {
 
 func (gen *MethodEnum) Generate(g *protogen.GeneratedFile, services []*protogen.Service) error {
 	for _, service := range services {
-		serviceName := service.Desc.Name()
+		serviceName := uppercase(string(service.Desc.Name()))
 		serviceFullName := service.Desc.FullName()
 		g.P("const (")
 		for _, method := range service.Methods {
@@ -28,4 +28,11 @@ func (gen *MethodEnum) Generate(g *protogen.GeneratedFile, services []*protogen.
 		g.P()
 	}
 	return nil
+}
+
+func uppercase(s string) string {
+	if len(s) > 0 && s[0] >= 'a' && s[0] <= 'z' {
+		return string(s[0]-32) + s[1:]
+	}
+	return s
 }
