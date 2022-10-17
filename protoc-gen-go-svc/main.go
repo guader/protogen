@@ -4,10 +4,11 @@ import (
 	"flag"
 	"strings"
 
-	"github.com/guader/protogen/protoc-gen-go-svc/plugins"
-	"github.com/guader/protogen/version"
 	gengo "google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo"
 	"google.golang.org/protobuf/compiler/protogen"
+
+	"github.com/guader/protogen/protoc-gen-go-svc/plugins"
+	"github.com/guader/protogen/version"
 )
 
 const (
