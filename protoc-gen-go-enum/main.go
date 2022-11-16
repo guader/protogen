@@ -4,9 +4,11 @@ import (
 	"flag"
 	"strings"
 
+	gengo "google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo"
+	"google.golang.org/protobuf/compiler/protogen"
+
 	"github.com/guader/protogen/protoc-gen-go-enum/plugins"
 	"github.com/guader/protogen/version"
-	"google.golang.org/protobuf/compiler/protogen"
 )
 
 const (
@@ -34,6 +36,8 @@ func main() {
 }
 
 func generate(plugin *protogen.Plugin) error {
+	plugin.SupportedFeatures = gengo.SupportedFeatures
+
 	var specifiedGenerators []generator
 	for _, s := range strings.Split(flagPlugins, "+") {
 		switch s {
