@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 
 	"google.golang.org/genproto/googleapis/api/annotations"
@@ -29,8 +30,13 @@ func (gen *MethodEnum) Generate(g *protogen.GeneratedFile, services []*protogen.
 		}
 		g.P(")")
 		g.P()
+
 		g.P("// urls")
 		g.P("const (")
+		urlSet := make([]string, 0)
+		methodByUrl := make(map[string]string)
+		methodSet := make([]string, 0)
+		urlByMethod := make(map[string]string)
 		for _, method := range service.Methods {
 			opts := method.Desc.Options()
 			if opts == nil {
@@ -55,9 +61,31 @@ func (gen *MethodEnum) Generate(g *protogen.GeneratedFile, services []*protogen.
 				k := fmt.Sprintf("%s_URL_%s_%s", serviceName, m, methodName)
 				v := strconv.Quote(u)
 				g.P(fmt.Sprintf("%s = %s", k, v))
+
+				mk := fmt.Sprintf("%s_Method_%s", serviceName, methodName)
+				urlSet = append(urlSet, k)
+				methodByUrl[k] = mk
+				methodSet = append(methodSet, mk)
+				urlByMethod[mk] = k
 			}
 		}
 		g.P(")")
+		g.P()
+
+		g.P("var ", serviceName, "_MethodByURL = map[string]string{")
+		sort.Strings(urlSet)
+		for _, u := range urlSet {
+			g.P(u, ": ", methodByUrl[u], ",")
+		}
+		g.P("}")
+		g.P()
+
+		g.P("var ", serviceName, "_URLByMethod = map[string]string{")
+		sort.Strings(methodSet)
+		for _, m := range methodSet {
+			g.P(m, ": ", urlByMethod[m], ",")
+		}
+		g.P("}")
 		g.P()
 	}
 	return nil
