@@ -1,0 +1,180 @@
+syntax = "proto2";
+package validator;
+
+option go_package = "github.com/guader/protogen/pb/validator";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+    optional FileOptions fileOptions = 1331; // Extension number not registered yet.
+}
+
+extend google.protobuf.FieldOptions {
+    optional FieldRules rules = 1331; // Extension number not registered yet.
+}
+
+message FileOptions {
+    optional bool enable = 1;
+    optional string suffix = 2;
+}
+
+message FieldRules {
+    oneof type {
+        FieldRulesBool bool = 1;
+        FieldRulesEnum enum = 2;
+        FieldRulesInt32 int32 = 3;
+
+        //        FieldRulesSint32 sint32 = 4;
+
+        FieldRulesUint32 uint32 = 5;
+        FieldRulesInt64 int64 = 6;
+
+        //        FieldRulesSint64 sint64 = 7;
+
+        FieldRulesUint64 uint64 = 8;
+
+        //        FieldRulesSfixed32 sfixed32 = 9;
+        //        FieldRulesFixed32 fixed32 = 10;
+
+        FieldRulesFloat float = 11;
+
+        //        FieldRulesSfixed64 sfixed64 = 12;
+        //        FieldRulesFixed64 fixed64 = 13;
+
+        FieldRulesDouble double = 14;
+        FieldRulesString string = 15;
+        FieldRulesBytes bytes = 16;
+        FieldRulesMessage message = 17;
+
+        //        FieldRulesGroup group = 18;
+    }
+    optional FieldRulesRepeated repeated = 31;
+}
+
+message FieldRulesBool {
+    optional bool eq = 1;
+}
+
+message FieldRulesEnum {
+    optional int32 eq = 1;
+    optional int32 ne = 2;
+    optional int32 lt = 3;
+    optional int32 gt = 4;
+    optional int32 le = 5;
+    optional int32 ge = 6;
+    repeated int32 in = 7;
+    repeated int32 not_in = 8;
+    optional bool defined = 9; // Enum value must be defined. Take no effect when `in` is not empty.
+}
+
+message FieldRulesInt32 {
+    optional int32 eq = 1;
+    optional int32 ne = 2;
+    optional int32 lt = 3;
+    optional int32 gt = 4;
+    optional int32 le = 5;
+    optional int32 ge = 6;
+    repeated int32 in = 7;
+    repeated int32 not_in = 8;
+}
+
+//message FieldRulesSint32 {}
+
+message FieldRulesUint32 {
+    optional uint32 eq = 1;
+    optional uint32 ne = 2;
+    optional uint32 lt = 3;
+    optional uint32 gt = 4;
+    optional uint32 le = 5;
+    optional uint32 ge = 6;
+    repeated uint32 in = 7;
+    repeated uint32 not_in = 8;
+}
+
+message FieldRulesInt64 {
+    optional int64 eq = 1;
+    optional int64 ne = 2;
+    optional int64 lt = 3;
+    optional int64 gt = 4;
+    optional int64 le = 5;
+    optional int64 ge = 6;
+    repeated int64 in = 7;
+    repeated int64 not_in = 8;
+}
+
+//message FieldRulesSint64 {}
+
+message FieldRulesUint64 {
+    optional uint64 eq = 1;
+    optional uint64 ne = 2;
+    optional uint64 lt = 3;
+    optional uint64 gt = 4;
+    optional uint64 le = 5;
+    optional uint64 ge = 6;
+    repeated uint64 in = 7;
+    repeated uint64 not_in = 8;
+}
+
+//message FieldRulesSfixed32 {}
+
+//message FieldRulesFixed32 {}
+
+message FieldRulesFloat {
+    optional float eq = 1;
+    optional float ne = 2;
+    optional float lt = 3;
+    optional float gt = 4;
+    optional float le = 5;
+    optional float ge = 6;
+    repeated float in = 7;
+    repeated float not_in = 8;
+}
+
+//message FieldRulesSfixed64 {}
+
+//message FieldRulesFixed64 {}
+
+message FieldRulesDouble {
+    optional double eq = 1;
+    optional double ne = 2;
+    optional double lt = 3;
+    optional double gt = 4;
+    optional double le = 5;
+    optional double ge = 6;
+    repeated double in = 7;
+    repeated double not_in = 8;
+}
+
+message FieldRulesString {
+    optional uint64 eq = 1;
+    optional uint64 ne = 2;
+    optional uint64 lt = 3;
+    optional uint64 gt = 4;
+    optional uint64 le = 5;
+    optional uint64 ge = 6;
+    repeated string in = 7;
+    repeated string not_in = 8;
+}
+
+message FieldRulesBytes {
+    optional uint64 eq = 1;
+    optional uint64 ne = 2;
+    optional uint64 lt = 3;
+    optional uint64 gt = 4;
+    optional uint64 le = 5;
+    optional uint64 ge = 6;
+}
+
+message FieldRulesMessage {}
+
+//message FieldRulesGroup {}
+
+message FieldRulesRepeated {
+    optional uint64 eq = 1;
+    optional uint64 ne = 2;
+    optional uint64 lt = 3;
+    optional uint64 gt = 4;
+    optional uint64 le = 5;
+    optional uint64 ge = 6;
+    optional bool skip_nil = 7; // Skip nil item.
+}
