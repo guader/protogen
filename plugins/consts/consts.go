@@ -39,8 +39,9 @@ func Generate(plugin *protogen.Plugin) error {
 		for _, service := range file.Services {
 
 			var (
-				urlKV    []string
-				methodKV []string
+				urlKV         []string
+				urlByMethodKV []string
+				methodByURLKv []string
 			)
 			for _, method := range service.Methods {
 				opts := pkg.ProtoGetExtension[annotations.HttpRule](method.Desc.Options(), annotations.E_Http)
@@ -73,10 +74,11 @@ func Generate(plugin *protogen.Plugin) error {
 				}
 
 				urlKey := fmt.Sprintf(`%s_URL_%s_%s`, service.GoName, methodType, method.Desc.Name())
-				urlKV = append(urlKV, fmt.Sprintf(`%s = %s`, urlKey, strconv.Quote(path)))
-
 				methodKey := fmt.Sprintf(`%s_%s_FullMethodName`, service.GoName, method.Desc.Name())
-				methodKV = append(methodKV, fmt.Sprintf(`%s: %s,`, methodKey, urlKey))
+
+				urlKV = append(urlKV, fmt.Sprintf(`%s = %s`, urlKey, strconv.Quote(path)))
+				urlByMethodKV = append(urlByMethodKV, fmt.Sprintf(`%s: %s,`, methodKey, urlKey))
+				methodByURLKv = append(methodByURLKv, fmt.Sprintf(`%s: %s,`, urlKey, methodKey))
 			}
 
 			g.P("// URLs.")
@@ -88,7 +90,14 @@ func Generate(plugin *protogen.Plugin) error {
 
 			g.P("// URLByMethod.")
 			g.P(fmt.Sprintf(`var %s_URLByMethod = map[string]string{`, service.GoName))
-			for _, kv := range methodKV {
+			for _, kv := range urlByMethodKV {
+				g.P(kv)
+			}
+			g.P("}")
+
+			g.P("// MethodByURL.")
+			g.P(fmt.Sprintf(`var %s_MethodByURL = map[string]string{`, service.GoName))
+			for _, kv := range methodByURLKv {
 				g.P(kv)
 			}
 			g.P("}")
