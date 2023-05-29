@@ -3,6 +3,7 @@ package main
 import (
 	"google.golang.org/protobuf/compiler/protogen"
 
+	"github.com/guader/protogen/plugins/consts"
 	"github.com/guader/protogen/plugins/errorer"
 	"github.com/guader/protogen/plugins/setter"
 	"github.com/guader/protogen/plugins/validator"
@@ -17,6 +18,7 @@ func generate(plugin *protogen.Plugin) error {
 		setter.Generate,
 		validator.Generate,
 		errorer.Generate,
+		consts.Generate,
 	} {
 		if err := f(plugin); err != nil {
 			return err

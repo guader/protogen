@@ -7,4 +7,5 @@ pb:
 		--go_opt paths=source_relative \
 		./pb/setter/*.proto \
 		./pb/validator/*.proto \
-		./pb/errorer/*.proto
+		./pb/errorer/*.proto \
+		./pb/consts/*.proto
