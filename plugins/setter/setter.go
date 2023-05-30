@@ -40,6 +40,28 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P("package ", file.GoPackageName)
 		g.P()
 
+		// https://github.com/protocolbuffers/protobuf-go/blob/v1.28.1/cmd/protoc-gen-go/internal_gengo/main.go
+		// Blank imports are automatically handled by g.Import.
+		// Packages referenced by g.QualifiedGoIdent are automatically imported.
+		// See documents for g.Import.
+		for i := 0; i < file.Desc.Imports().Len(); i++ {
+			imp := file.Desc.Imports().Get(i)
+			f, ok := plugin.FilesByPath[imp.Path()]
+			if !ok {
+				continue
+			}
+			// Do not import self.
+			if f.GoImportPath == file.GoImportPath {
+				continue
+			}
+			if !imp.IsWeak {
+				g.Import(f.GoImportPath)
+			}
+			if !imp.IsPublic {
+				continue
+			}
+		}
+
 		for _, message := range file.Messages {
 			messageOpts := pkg.ProtoGetExtension[setter.MessageOptions](message.Desc.Options(), setter.E_MessageOptions)
 			if messageOpts.GetDisable() {
@@ -52,51 +74,7 @@ func Generate(plugin *protogen.Plugin) error {
 					continue
 				}
 
-				var typ string
-				switch field.Desc.Kind() {
-				case protoreflect.BoolKind:
-					typ = "bool"
-				case protoreflect.EnumKind:
-					continue
-				case protoreflect.Int32Kind, protoreflect.Sint32Kind:
-					typ = "int32"
-				case protoreflect.Uint32Kind:
-					typ = "uint32"
-				case protoreflect.Int64Kind, protoreflect.Sint64Kind:
-					typ = "int64"
-				case protoreflect.Uint64Kind:
-					typ = "uint64"
-				case protoreflect.Sfixed32Kind:
-					continue
-				case protoreflect.Fixed32Kind:
-					continue
-				case protoreflect.FloatKind:
-					typ = "float32"
-				case protoreflect.Sfixed64Kind:
-					continue
-				case protoreflect.Fixed64Kind:
-					continue
-				case protoreflect.DoubleKind:
-					typ = "float64"
-				case protoreflect.StringKind:
-					typ = "string"
-				case protoreflect.BytesKind:
-					typ = "[]byte"
-				case protoreflect.MessageKind:
-					continue
-				case protoreflect.GroupKind:
-					continue
-				}
-
-				var star, list string
-				if field.Desc.HasPresence() {
-					star = "*"
-				}
-				if field.Desc.IsList() {
-					list = "[]"
-				}
-
-				g.P("func (x *", message.Desc.Name(), ") Set", field.GoName, "(v ", list, star, typ, ") {")
+				g.P("func (x *", message.Desc.Name(), ") Set", field.GoName, "(v ", fieldType(g, field), ") {")
 				g.P("if x != nil {")
 				g.P("x.", field.GoName, "=v")
 				g.P("}")
@@ -106,4 +84,51 @@ func Generate(plugin *protogen.Plugin) error {
 		}
 	}
 	return nil
+}
+
+func fieldType(g *protogen.GeneratedFile, field *protogen.Field) string {
+	var (
+		typ  string // identifier
+		star string // pointer
+	)
+	if field.Desc.HasPresence() {
+		star = "*"
+	}
+
+	switch field.Desc.Kind() {
+	case protoreflect.BoolKind:
+		typ = "bool"
+	case protoreflect.EnumKind:
+		typ = g.QualifiedGoIdent(field.Enum.GoIdent)
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
+		typ = "int32"
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
+		typ = "uint32"
+	case protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+		typ = "int64"
+	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+		typ = "uint64"
+	case protoreflect.FloatKind:
+		typ = "float32"
+	case protoreflect.DoubleKind:
+		typ = "float64"
+	case protoreflect.StringKind:
+		typ = "string"
+	case protoreflect.BytesKind:
+		typ = "[]byte"
+		star = ""
+	case protoreflect.MessageKind, protoreflect.GroupKind:
+		typ = "*" + g.QualifiedGoIdent(field.Message.GoIdent)
+		star = ""
+	}
+
+	if field.Desc.IsList() {
+		return "[]" + typ
+	} else if field.Desc.IsMap() {
+		k := fieldType(g, field.Message.Fields[0])
+		v := fieldType(g, field.Message.Fields[1])
+		return fmt.Sprintf(`map[%s]%s`, k, v)
+	}
+
+	return star + typ
 }
