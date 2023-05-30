@@ -33,7 +33,9 @@ func Generate(plugin *protogen.Plugin) error {
 
 		g := plugin.NewGeneratedFile(fmt.Sprintf("%s%s.go", file.GeneratedFilenamePrefix, suffix),
 			file.GoImportPath)
-		g.P(pkg.RenderPackageComments(version.Version, "errorer", file.Desc.Path(), string(file.GoPackageName)))
+		g.P(pkg.RenderPackageComments(version.Version, "errorer", file.Desc.Path()))
+		g.P("package ", file.GoPackageName)
+		g.P()
 
 		for _, enum := range file.Enums {
 			enumOpts := pkg.ProtoGetExtension[errorer.EnumOptions](enum.Desc.Options(), errorer.E_EnumOptions)
