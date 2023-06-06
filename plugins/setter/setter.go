@@ -48,15 +48,10 @@ func Generate(plugin *protogen.Plugin) error {
 				continue
 			}
 			// Do not import self.
-			if f.GoImportPath == file.GoImportPath {
+			if f.GoImportPath == file.GoImportPath || imp.IsWeak {
 				continue
 			}
-			if !imp.IsWeak {
-				g.Import(f.GoImportPath)
-			}
-			if !imp.IsPublic {
-				continue
-			}
+			g.Import(f.GoImportPath)
 		}
 
 		for _, message := range file.Messages {

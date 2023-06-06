@@ -39,7 +39,6 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P()
 
 		for _, service := range file.Services {
-
 			var (
 				urlKV         []string
 				urlByMethodKV []string
