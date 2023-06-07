@@ -6,7 +6,6 @@ import (
 
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/guader/protogen/pb/validator"
 	"github.com/guader/protogen/pkg"
@@ -14,8 +13,6 @@ import (
 )
 
 func Generate(plugin *protogen.Plugin) error {
-	plugin.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
-
 	for _, file := range plugin.Files {
 		if !file.Generate {
 			continue

@@ -8,4 +8,5 @@ pb:
 		./pb/setter/*.proto \
 		./pb/validator/*.proto \
 		./pb/errorer/*.proto \
-		./pb/consts/*.proto
+		./pb/consts/*.proto \
+		./pb/i18n/*.proto
