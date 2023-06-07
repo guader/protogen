@@ -9,8 +9,12 @@ extend google.protobuf.FileOptions {
     optional FileOptions fileOptions = 1334; // Extension number not registered yet.
 }
 
+extend google.protobuf.EnumValueOptions {
+    optional I18n enum = 1334; // Extension number not registered yet.
+}
+
 extend google.protobuf.FieldOptions {
-    optional I18n i18n = 1334; // Extension number not registered yet.
+    optional I18n field = 1334; // Extension number not registered yet.
 }
 
 message FileOptions {
@@ -157,7 +161,7 @@ message I18n {
     // Korean
     optional string ko = 68;
     // Korean (Johab)
-//    optional string ko = 69;
+    //    optional string ko = 69;
     // Kurdish
     optional string ku = 70;
     // Latvian

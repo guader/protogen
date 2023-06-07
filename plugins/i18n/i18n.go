@@ -25,6 +25,7 @@ func Generate(plugin *protogen.Plugin) error {
 		}
 
 		objectsByLang := make(map[string]map[string][][2]string)
+		translationsForEnums(objectsByLang, file.Enums)
 		translationsForMessages(objectsByLang, file.Messages)
 		translations := make([]translation, 0, len(objectsByLang))
 		for lang, fieldsByTypeName := range objectsByLang {
@@ -76,13 +77,38 @@ func Generate(plugin *protogen.Plugin) error {
 	return nil
 }
 
+func translationsForEnums(objectsByLang map[string]map[string][][2]string, es []*protogen.Enum) {
+	for _, e := range es {
+		objectName := e.GoIdent.GoName
+		for _, v := range e.Values {
+			opts := pkg.ProtoGetExtension[i18n.I18N](v.Desc.Options(), i18n.E_Enum)
+			if opts == nil {
+				continue
+			}
+			fieldName := string(v.Desc.Name())
+			opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+				lang := string(d.Name())
+				fieldsByObjectName, ok := objectsByLang[lang]
+				if !ok {
+					fieldsByObjectName = make(map[string][][2]string)
+					objectsByLang[lang] = fieldsByObjectName
+				}
+				fieldsByObjectName[objectName] = append(fieldsByObjectName[objectName], [2]string{fieldName, v.String()})
+				return true
+			})
+		}
+	}
+}
+
 // map[string]map[string][][2]string
 // map[LANG]map[OBJECT][]{FIELD,TEXT}
 func translationsForMessages(objectsByLang map[string]map[string][][2]string, ms []*protogen.Message) {
 	for _, m := range ms {
+		translationsForEnums(objectsByLang, m.Enums)
+
 		objectName := m.GoIdent.GoName
 		for _, f := range m.Fields {
-			opts := pkg.ProtoGetExtension[i18n.I18N](f.Desc.Options(), i18n.E_I18N)
+			opts := pkg.ProtoGetExtension[i18n.I18N](f.Desc.Options(), i18n.E_Field)
 			if opts == nil {
 				continue
 			}
@@ -98,6 +124,7 @@ func translationsForMessages(objectsByLang map[string]map[string][][2]string, ms
 				return true
 			})
 		}
+
 		translationsForMessages(objectsByLang, m.Messages)
 	}
 }
