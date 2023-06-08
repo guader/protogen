@@ -66,11 +66,11 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 			continue
 		}
 
-		typ := e.GoIdent.GoName
+		typ := g.QualifiedGoIdent(e.GoIdent)
 		Prefix := "I18n_" + typ // Export.
 		prefix := "i18n_" + typ // Unexport.
 		g.P("type ", Prefix, " interface {")
-		g.P("I18n_GetByValue(v ", g.QualifiedGoIdent(e.GoIdent), ") string")
+		g.P("I18n_GetByValue(v ", typ, ") string")
 		g.P("}")
 
 		langs := make([]language, 0, len(transesByLang))
@@ -82,13 +82,8 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 		})
 		for _, lang := range langs {
 			g.P()
-			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
-			g.P()
-			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
-			g.P()
-			g.P(fmt.Sprintf(`func (*%s_%s) I18n_GetByValue(v %s) string {`,
-				prefix, lang, g.QualifiedGoIdent(e.GoIdent)))
-			g.P("switch v {")
+			g.P("func (x ", typ, ") I18n_", lang, "() string {")
+			g.P("return map[", typ, "]string{")
 			transes := transesByLang[lang]
 			for _, v := range e.Values {
 				value := g.QualifiedGoIdent(v.GoIdent)
@@ -96,12 +91,32 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 				if !ok {
 					continue
 				}
-				g.P("case ", value, ":")
-				g.P(fmt.Sprintf(`return %q`, text))
+				g.P(fmt.Sprintf(`%s: %q,`, value, text))
 			}
-			g.P("default:")
-			g.P(`return ""`)
+			g.P("}[x]")
 			g.P("}")
+
+			g.P()
+			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
+			g.P()
+			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
+			g.P()
+			g.P(fmt.Sprintf(`func (*%s_%s) I18n_GetByValue(v %s) string {`,
+				prefix, lang, typ))
+			g.P("return v.I18n_", lang, "()")
+			//g.P("switch v {")
+			//for _, v := range e.Values {
+			//	value := g.QualifiedGoIdent(v.GoIdent)
+			//	text, ok := transes[value]
+			//	if !ok {
+			//		continue
+			//	}
+			//	g.P("case ", value, ":")
+			//	g.P(fmt.Sprintf(`return %q`, text))
+			//}
+			//g.P("default:")
+			//g.P(`return ""`)
+			//g.P("}")
 			g.P("}")
 		}
 	}
@@ -136,7 +151,7 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 			continue
 		}
 
-		typ := m.GoIdent.GoName
+		typ := g.QualifiedGoIdent(m.GoIdent)
 		Prefix := "I18n_" + typ // Export.
 		prefix := "i18n_" + typ // Unexport.
 		g.P()
