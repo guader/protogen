@@ -50,7 +50,7 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 			if opts == nil {
 				continue
 			}
-			value := g.QualifiedGoIdent(v.GoIdent)
+			value := v.GoIdent.GoName
 			opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 				lang := d.Name()
 				transes, ok := transesByLang[lang]
@@ -66,7 +66,7 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 			continue
 		}
 
-		typ := g.QualifiedGoIdent(e.GoIdent)
+		typ := e.GoIdent.GoName
 		Prefix := "I18n_" + typ // Export.
 		prefix := "i18n_" + typ // Unexport.
 		g.P("type ", Prefix, " interface {")
@@ -86,7 +86,7 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 			g.P("return map[", typ, "]string{")
 			transes := transesByLang[lang]
 			for _, v := range e.Values {
-				value := g.QualifiedGoIdent(v.GoIdent)
+				value := v.GoIdent.GoName
 				text, ok := transes[value]
 				if !ok {
 					continue
@@ -151,7 +151,7 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 			continue
 		}
 
-		typ := g.QualifiedGoIdent(m.GoIdent)
+		typ := m.GoIdent.GoName
 		Prefix := "I18n_" + typ // Export.
 		prefix := "i18n_" + typ // Unexport.
 		g.P()
