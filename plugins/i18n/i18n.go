@@ -76,6 +76,9 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 
 func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 	for _, m := range ms {
+		generateEnums(g, m.Enums)
+		generateMessages(g, m.Messages)
+
 		fields := make([]string, 0)
 		transesByLang := make(map[language]translations)
 		for _, f := range m.Fields {
@@ -100,8 +103,6 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 			continue
 		}
 		generateI18n(g, m.GoIdent.GoName, fields, transesByLang)
-		generateEnums(g, m.Enums)
-		generateMessages(g, m.Messages)
 	}
 }
 
