@@ -40,37 +40,70 @@ func Generate(plugin *protogen.Plugin) error {
 	return nil
 }
 
-type (
-	language     = protoreflect.Name
-	translations = map[string]string
-)
+type language = protoreflect.Name
 
 func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 	for _, e := range es {
-		fields := make([]string, 0)
-		transesByLang := make(map[language]translations)
+		transesByLang := make(map[language]map[string]string)
 		for _, v := range e.Values {
 			opts := pkg.ProtoGetExtension[i18n.I18N](v.Desc.Options(), i18n.E_Enum)
 			if opts == nil {
 				continue
 			}
-			field := exportName(string(v.Desc.Name())) // Want shorter name but exported.
-			fields = append(fields, field)
+			value := g.QualifiedGoIdent(v.GoIdent)
 			opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 				lang := d.Name()
 				transes, ok := transesByLang[lang]
 				if !ok {
-					transes = make(translations)
+					transes = make(map[string]string)
 					transesByLang[lang] = transes
 				}
-				transes[field] = v.String()
+				transes[value] = v.String()
 				return true
 			})
 		}
-		if len(fields) == 0 {
+		if len(transesByLang) == 0 {
 			continue
 		}
-		generateI18n(g, e.GoIdent.GoName, fields, transesByLang)
+
+		typ := e.GoIdent.GoName
+		Prefix := "I18n_" + typ // Export.
+		prefix := "i18n_" + typ // Unexport.
+		g.P("type ", Prefix, " interface {")
+		g.P("I18n_GetByValue(v ", g.QualifiedGoIdent(e.GoIdent), ") string")
+		g.P("}")
+
+		langs := make([]language, 0, len(transesByLang))
+		for lang := range transesByLang {
+			langs = append(langs, lang)
+		}
+		sort.SliceStable(langs, func(i, j int) bool {
+			return langs[i] < langs[j]
+		})
+		for _, lang := range langs {
+			g.P()
+			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
+			g.P()
+			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
+			g.P()
+			g.P(fmt.Sprintf(`func (*%s_%s) I18n_GetByValue(v %s) string {`,
+				prefix, lang, g.QualifiedGoIdent(e.GoIdent)))
+			g.P("switch v {")
+			transes := transesByLang[lang]
+			for _, v := range e.Values {
+				value := g.QualifiedGoIdent(v.GoIdent)
+				text, ok := transes[value]
+				if !ok {
+					continue
+				}
+				g.P("case ", value, ":")
+				g.P(fmt.Sprintf(`return %q`, text))
+			}
+			g.P("default:")
+			g.P(`return ""`)
+			g.P("}")
+			g.P("}")
+		}
 	}
 }
 
@@ -80,7 +113,7 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 		generateMessages(g, m.Messages)
 
 		fields := make([]string, 0)
-		transesByLang := make(map[language]translations)
+		transesByLang := make(map[language]map[string]string)
 		for _, f := range m.Fields {
 			opts := pkg.ProtoGetExtension[i18n.I18N](f.Desc.Options(), i18n.E_Field)
 			if opts == nil {
@@ -92,7 +125,7 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 				lang := d.Name()
 				transes, ok := transesByLang[lang]
 				if !ok {
-					transes = make(translations)
+					transes = make(map[string]string)
 					transesByLang[lang] = transes
 				}
 				transes[field] = v.String()
@@ -102,40 +135,34 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 		if len(fields) == 0 {
 			continue
 		}
-		generateI18n(g, m.GoIdent.GoName, fields, transesByLang)
-	}
-}
 
-func generateI18n(g *protogen.GeneratedFile, typ string, fields []string, transesByLang map[language]translations) {
-	Prefix := "I18n_" + typ // Export.
-	prefix := "i18n_" + typ // Unexport.
-	g.P()
-	g.P("type ", Prefix, " interface {")
-	for _, field := range fields {
-		g.P(field, "() string")
-	}
-	g.P("}")
-
-	langs := make([]language, 0, len(transesByLang))
-	for lang := range transesByLang {
-		langs = append(langs, lang)
-	}
-	sort.SliceStable(langs, func(i, j int) bool {
-		return langs[i] < langs[j]
-	})
-	for _, lang := range langs {
+		typ := m.GoIdent.GoName
+		Prefix := "I18n_" + typ // Export.
+		prefix := "i18n_" + typ // Unexport.
 		g.P()
-		g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
-		g.P()
-		g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
-		g.P()
-		transes := transesByLang[lang]
+		g.P("type ", Prefix, " interface {")
 		for _, field := range fields {
-			g.P(fmt.Sprintf(`func (*%s_%s) %s() string { return %q }`, prefix, lang, field, transes[field]))
+			g.P(field, "() string")
+		}
+		g.P("}")
+
+		langs := make([]language, 0, len(transesByLang))
+		for lang := range transesByLang {
+			langs = append(langs, lang)
+		}
+		sort.SliceStable(langs, func(i, j int) bool {
+			return langs[i] < langs[j]
+		})
+		for _, lang := range langs {
+			g.P()
+			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
+			g.P()
+			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
+			g.P()
+			transes := transesByLang[lang]
+			for _, field := range fields {
+				g.P(fmt.Sprintf(`func (*%s_%s) %s() string { return %q }`, prefix, lang, field, transes[field]))
+			}
 		}
 	}
-}
-
-func exportName(name string) string {
-	return strings.ToUpper(name[:1]) + name[1:]
 }
