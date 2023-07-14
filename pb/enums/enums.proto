@@ -1,0 +1,15 @@
+syntax = "proto2";
+package enums;
+
+option go_package = "github.com/guader/protogen/pb/enums";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+    optional FileOptions fileOptions = 1335; // Extension number not registered yet.
+}
+
+message FileOptions {
+    optional bool enable = 1;
+    optional string suffix = 2;
+}

@@ -9,4 +9,5 @@ pb:
 		./pb/validator/*.proto \
 		./pb/errorer/*.proto \
 		./pb/consts/*.proto \
-		./pb/i18n/*.proto
+		./pb/i18n/*.proto \
+		./pb/enums/*.proto
