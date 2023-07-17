@@ -11,4 +11,5 @@ pb:
 		./pb/consts/*.proto \
 		./pb/i18n/*.proto \
 		./pb/enums/*.proto \
-		./pb/getter/*.proto
+		./pb/getter/*.proto \
+		./pb/accessor/*.proto
