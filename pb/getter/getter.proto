@@ -1,0 +1,23 @@
+syntax = "proto2";
+package getter;
+
+option go_package = "github.com/guader/protogen/pb/getter";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+    optional FileOptions fileOptions = 1336; // Extension number not registered yet.
+}
+
+extend google.protobuf.FieldOptions {
+    optional FieldOptions fieldOptions = 1336; // Extension number not registered yet.
+}
+
+message FileOptions {
+    optional bool enable = 1;
+    optional string suffix = 2;
+}
+
+message FieldOptions {
+    optional string name = 1;
+}

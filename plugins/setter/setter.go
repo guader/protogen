@@ -38,18 +38,18 @@ func Generate(plugin *protogen.Plugin) error {
 		// Blank imports are automatically handled by g.Import.
 		// Packages referenced by g.QualifiedGoIdent are automatically imported.
 		// See documents for g.Import.
-		for i := 0; i < file.Desc.Imports().Len(); i++ {
-			imp := file.Desc.Imports().Get(i)
-			f, ok := plugin.FilesByPath[imp.Path()]
-			if !ok {
-				continue
-			}
-			// Do not import self.
-			if f.GoImportPath == file.GoImportPath || imp.IsWeak {
-				continue
-			}
-			g.Import(f.GoImportPath)
-		}
+		//for i := 0; i < file.Desc.Imports().Len(); i++ {
+		//	imp := file.Desc.Imports().Get(i)
+		//	f, ok := plugin.FilesByPath[imp.Path()]
+		//	if !ok {
+		//		continue
+		//	}
+		//	// Do not import self.
+		//	if f.GoImportPath == file.GoImportPath || imp.IsWeak {
+		//		continue
+		//	}
+		//	g.Import(f.GoImportPath)
+		//}
 
 		for _, message := range file.Messages {
 			messageOpts := pkg.ProtoGetExtension[setter.MessageOptions](message.Desc.Options(), setter.E_MessageOptions)

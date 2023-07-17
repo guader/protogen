@@ -7,6 +7,7 @@ import (
 	"github.com/guader/protogen/plugins/consts"
 	"github.com/guader/protogen/plugins/enums"
 	"github.com/guader/protogen/plugins/errorer"
+	"github.com/guader/protogen/plugins/getter"
 	"github.com/guader/protogen/plugins/i18n"
 	"github.com/guader/protogen/plugins/setter"
 	"github.com/guader/protogen/plugins/validator"
@@ -25,6 +26,7 @@ func generate(plugin *protogen.Plugin) error {
 		consts.Generate,
 		i18n.Generate,
 		enums.Generate,
+		getter.Generate,
 	} {
 		if err := f(plugin); err != nil {
 			return err

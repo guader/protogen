@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 
+	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -24,4 +25,68 @@ func RenderPackageComments(version, plugin, source string) string {
 // plugin: %s
 // source: %s
 `, version, plugin, source)
+}
+
+func GoFieldTypeInfo(g *protogen.GeneratedFile, field *protogen.Field) (string, string, bool) {
+	var (
+		idt     string // identifier
+		star    string // pointer
+		hasStar bool   // has star
+		dft     string // default value of identifier
+	)
+
+	if field.Desc.HasPresence() {
+		star = "*"
+		hasStar = true
+	}
+
+	switch field.Desc.Kind() {
+	case protoreflect.BoolKind:
+		idt = "bool"
+		dft = "false"
+	case protoreflect.EnumKind:
+		idt = g.QualifiedGoIdent(field.Enum.GoIdent)
+		dft = idt + "(0)"
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
+		idt = "int32"
+		dft = "0"
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
+		idt = "uint32"
+		dft = "0"
+	case protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+		idt = "int64"
+		dft = "0"
+	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+		idt = "uint64"
+		dft = "0"
+	case protoreflect.FloatKind:
+		idt = "float32"
+		dft = "0"
+	case protoreflect.DoubleKind:
+		idt = "float64"
+		dft = "0"
+	case protoreflect.StringKind:
+		idt = "string"
+		dft = `""`
+	case protoreflect.BytesKind:
+		idt = "[]byte"
+		star = ""
+		hasStar = false
+		dft = "nil"
+	case protoreflect.MessageKind, protoreflect.GroupKind:
+		idt = "*" + g.QualifiedGoIdent(field.Message.GoIdent)
+		star = ""
+		hasStar = true
+		dft = "nil"
+	}
+
+	if field.Desc.IsList() {
+		return "[]" + idt, "nil", false
+	} else if field.Desc.IsMap() {
+		k, _, _ := GoFieldTypeInfo(g, field.Message.Fields[0])
+		v, _, _ := GoFieldTypeInfo(g, field.Message.Fields[1])
+		return fmt.Sprintf(`map[%s]%s`, k, v), "nil", false
+	}
+
+	return star + idt, dft, hasStar
 }
