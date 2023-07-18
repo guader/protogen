@@ -23,9 +23,9 @@ message FileOptions {
 }
 
 message MessageOptions {
-    optional bool disable = 1;
+    optional bool enable = 1;
 }
 
 message FieldOptions {
-    optional bool disable = 1;
+    optional string name = 1;
 }

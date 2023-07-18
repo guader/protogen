@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/guader/protogen/pb/setter"
 	"github.com/guader/protogen/pkg"
@@ -51,73 +50,37 @@ func Generate(plugin *protogen.Plugin) error {
 		//	g.Import(f.GoImportPath)
 		//}
 
-		for _, message := range file.Messages {
-			messageOpts := pkg.ProtoGetExtension[setter.MessageOptions](message.Desc.Options(), setter.E_MessageOptions)
-			if messageOpts.GetDisable() {
-				continue
-			}
-
-			for _, field := range message.Fields {
-				fieldOpts := pkg.ProtoGetExtension[setter.FieldOptions](field.Desc.Options(), setter.E_FieldOptions)
-				if fieldOpts.GetDisable() {
-					continue
-				}
-
-				g.P("func (x *", message.Desc.Name(), ") Set", field.GoName, "(v ", fieldType(g, field), ") {")
-				g.P("if x != nil {")
-				g.P("x.", field.GoName, "=v")
-				g.P("}")
-				g.P("}")
-				g.P()
-			}
-		}
+		generate(g, file.Messages)
 	}
 	return nil
 }
 
-func fieldType(g *protogen.GeneratedFile, field *protogen.Field) string {
-	var (
-		typ  string // identifier
-		star string // pointer
-	)
-	if field.Desc.HasPresence() {
-		star = "*"
-	}
+func generate(g *protogen.GeneratedFile, ms []*protogen.Message) {
+	for _, m := range ms {
+		generate(g, m.Messages)
 
-	switch field.Desc.Kind() {
-	case protoreflect.BoolKind:
-		typ = "bool"
-	case protoreflect.EnumKind:
-		typ = g.QualifiedGoIdent(field.Enum.GoIdent)
-	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
-		typ = "int32"
-	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
-		typ = "uint32"
-	case protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
-		typ = "int64"
-	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
-		typ = "uint64"
-	case protoreflect.FloatKind:
-		typ = "float32"
-	case protoreflect.DoubleKind:
-		typ = "float64"
-	case protoreflect.StringKind:
-		typ = "string"
-	case protoreflect.BytesKind:
-		typ = "[]byte"
-		star = ""
-	case protoreflect.MessageKind, protoreflect.GroupKind:
-		typ = "*" + g.QualifiedGoIdent(field.Message.GoIdent)
-		star = ""
-	}
+		messageOpts := pkg.ProtoGetExtension[setter.MessageOptions](m.Desc.Options(), setter.E_MessageOptions)
+		if !messageOpts.GetEnable() {
+			continue
+		}
 
-	if field.Desc.IsList() {
-		return "[]" + typ
-	} else if field.Desc.IsMap() {
-		k := fieldType(g, field.Message.Fields[0])
-		v := fieldType(g, field.Message.Fields[1])
-		return fmt.Sprintf(`map[%s]%s`, k, v)
-	}
+		for _, f := range m.Fields {
+			fieldName := f.GoName
+			fieldOpts := pkg.ProtoGetExtension[setter.FieldOptions](f.Desc.Options(), setter.E_FieldOptions)
+			name := strings.TrimSpace(fieldOpts.GetName())
+			if name == "" {
+				name = fieldName
+			}
 
-	return star + typ
+			typ, _, _ := pkg.GoFieldTypeInfo(g, f)
+
+			g.P("// Setter for field ", fieldName, ".")
+			g.P("func (x *", m.GoIdent.GoName, ") Set", name, "(v ", typ, ") {")
+			g.P("if x != nil {")
+			g.P("x.", fieldName, "=v")
+			g.P("}")
+			g.P("}")
+			g.P()
+		}
+	}
 }
