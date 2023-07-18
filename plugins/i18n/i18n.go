@@ -3,6 +3,7 @@ package i18n
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -34,149 +35,170 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P(pkg.RenderPackageComments(version.Version, "i18n", file.Desc.Path()))
 		g.P("package ", file.GoPackageName)
 
-		generateEnums(g, file.Enums)
-		generateMessages(g, file.Messages)
+		generateForEnums(g, file.Enums)
+		generateForMessages(g, file.Messages)
 	}
 	return nil
 }
 
-type language = protoreflect.Name
+func getTranslations(opts *i18n.I18N) [][2]string {
+	var list [][2]string
+	opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+		lang := string(d.Name())
+		text := v.String()
+		list = append(list, [2]string{lang, text})
+		return true
+	})
+	sort.SliceStable(list, func(i, j int) bool { return list[i][0] < list[j][0] })
+	return list
+}
 
-func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
+func generateForEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 	for _, e := range es {
-		transesByLang := make(map[language]map[string]string)
+		enumOpts := pkg.ProtoGetExtension[i18n.EnumOptions](e.Desc.Options(), i18n.E_EnumOptions)
+		if !enumOpts.GetEnable() {
+			continue
+		}
+
+		enumName := e.GoIdent.GoName
+
+		langSet := make(map[string]struct{})
+		// Generate translation table.
+		g.P("var ", enumName, "_i18n = map[", enumName, "]map[string]string{")
 		for _, v := range e.Values {
 			opts := pkg.ProtoGetExtension[i18n.I18N](v.Desc.Options(), i18n.E_Enum)
 			if opts == nil {
 				continue
 			}
-			value := v.GoIdent.GoName
-			opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-				lang := d.Name()
-				transes, ok := transesByLang[lang]
-				if !ok {
-					transes = make(map[string]string)
-					transesByLang[lang] = transes
-				}
-				transes[value] = v.String()
-				return true
-			})
+
+			ts := getTranslations(opts)
+			if len(ts) == 0 {
+				continue
+			}
+
+			g.P(g.QualifiedGoIdent(v.GoIdent), ":{")
+			for _, t := range ts {
+				lang := t[0]
+				text := t[1]
+				g.P(strconv.Quote(lang), ":", strconv.Quote(text), ",")
+				langSet[lang] = struct{}{}
+			}
+			g.P("},")
 		}
-		if len(transesByLang) == 0 {
+		g.P("}")
+		g.P()
+
+		if len(langSet) == 0 {
 			continue
 		}
-
-		typ := e.GoIdent.GoName
-		Prefix := "I18n_" + typ // Export.
-		prefix := "i18n_" + typ // Unexport.
-		g.P("type ", Prefix, " interface {")
-		g.P("I18n_GetByValue(v ", typ, ") string")
-		g.P("}")
-
-		langs := make([]language, 0, len(transesByLang))
-		for lang := range transesByLang {
+		var langs []string
+		for lang := range langSet {
 			langs = append(langs, lang)
 		}
-		sort.SliceStable(langs, func(i, j int) bool {
-			return langs[i] < langs[j]
-		})
-		for _, lang := range langs {
-			g.P()
-			g.P("func (x ", typ, ") I18n_", lang, "() string {")
-			g.P("return map[", typ, "]string{")
-			transes := transesByLang[lang]
-			for _, v := range e.Values {
-				value := v.GoIdent.GoName
-				text, ok := transes[value]
-				if !ok {
-					continue
-				}
-				g.P(fmt.Sprintf(`%s: %q,`, value, text))
-			}
-			g.P("}[x]")
-			g.P("}")
+		sort.SliceStable(langs, func(i, j int) bool { return langs[i] < langs[j] })
 
-			g.P()
-			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
-			g.P()
-			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
-			g.P()
-			g.P(fmt.Sprintf(`func (*%s_%s) I18n_GetByValue(v %s) string {`,
-				prefix, lang, typ))
-			g.P("return v.I18n_", lang, "()")
-			//g.P("switch v {")
-			//for _, v := range e.Values {
-			//	value := g.QualifiedGoIdent(v.GoIdent)
-			//	text, ok := transes[value]
-			//	if !ok {
-			//		continue
-			//	}
-			//	g.P("case ", value, ":")
-			//	g.P(fmt.Sprintf(`return %q`, text))
-			//}
-			//g.P("default:")
-			//g.P(`return ""`)
-			//g.P("}")
+		// Generate method for enum.
+		for _, lang := range langs {
+			g.P("func (x ", enumName, ") I18n_", lang, "() string {")
+			g.P("if m, ok := ", enumName, "_i18n[x]; ok {")
+			g.P("return m[", strconv.Quote(lang), "]")
 			g.P("}")
+			g.P(`return ""`)
+			g.P("}")
+			g.P()
+		}
+
+		// Generate interface.
+		g.P("type I18n_", enumName, " interface {")
+		g.P("I18n_GetByValue(", enumName, ") string")
+		g.P("}")
+		g.P()
+
+		// Generate exported variables.
+		g.P("var (")
+		for _, lang := range langs {
+			g.P("I18n_", enumName, "_", lang, " I18n_", enumName, "= (*i18n_", enumName, "_", lang, ")(nil)")
+		}
+		g.P(")")
+
+		// Generate unexported implementations.
+		for _, lang := range langs {
+			g.P("type i18n_", enumName, "_", lang, " struct{}")
+			g.P()
+			g.P("func (*i18n_", enumName, "_", lang, ") I18n_GetByValue(v ", enumName, ") string {")
+			g.P("return v.I18n_", lang, "()")
+			g.P("}")
+			g.P()
 		}
 	}
 }
 
-func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
+func generateForMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 	for _, m := range ms {
-		generateEnums(g, m.Enums)
-		generateMessages(g, m.Messages)
+		generateForEnums(g, m.Enums)
+		generateForMessages(g, m.Messages)
 
-		fields := make([]string, 0)
-		transesByLang := make(map[language]map[string]string)
-		for _, f := range m.Fields {
-			opts := pkg.ProtoGetExtension[i18n.I18N](f.Desc.Options(), i18n.E_Field)
-			if opts == nil {
-				continue
-			}
-			field := f.GoName
-			fields = append(fields, field)
-			opts.ProtoReflect().Range(func(d protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-				lang := d.Name()
-				transes, ok := transesByLang[lang]
-				if !ok {
-					transes = make(map[string]string)
-					transesByLang[lang] = transes
-				}
-				transes[field] = v.String()
-				return true
-			})
-		}
-		if len(fields) == 0 {
+		messageOpts := pkg.ProtoGetExtension[i18n.MessageOptions](m.Desc.Options(), i18n.E_MessageOptions)
+		if !messageOpts.GetEnable() {
 			continue
 		}
 
-		typ := m.GoIdent.GoName
-		Prefix := "I18n_" + typ // Export.
-		prefix := "i18n_" + typ // Unexport.
-		g.P()
-		g.P("type ", Prefix, " interface {")
-		for _, field := range fields {
-			g.P(field, "() string")
+		messageName := m.GoIdent.GoName
+
+		// Gather field information.
+		langSet := make(map[string]struct{})
+		transesByLang := make(map[string]map[string]string) // map[lang]map[field]text
+		for _, f := range m.Fields {
+			opts := pkg.ProtoGetExtension[i18n.I18N](f.Desc.Options(), i18n.E_Field)
+			for _, t := range getTranslations(opts) {
+				lang := t[0]
+				text := t[1]
+				langSet[lang] = struct{}{}
+				if _, ok := transesByLang[lang]; !ok {
+					transesByLang[lang] = make(map[string]string)
+				}
+				transesByLang[lang][f.GoName] = text
+			}
+		}
+		if len(langSet) == 0 {
+			continue
+		}
+
+		// Generate interface.
+		g.P("type I18n_", messageName, " interface {")
+		for _, f := range m.Fields {
+			g.P(f.GoName, "() string")
+
 		}
 		g.P("}")
+		g.P()
 
-		langs := make([]language, 0, len(transesByLang))
-		for lang := range transesByLang {
+		var langs []string
+		for lang := range langSet {
 			langs = append(langs, lang)
 		}
-		sort.SliceStable(langs, func(i, j int) bool {
-			return langs[i] < langs[j]
-		})
+		sort.SliceStable(langs, func(i, j int) bool { return langs[i] < langs[j] })
+
+		// Generate exported variables.
+		g.P("var (")
 		for _, lang := range langs {
+			g.P("I18n_", messageName, "_", lang, " I18n_", messageName, " = (*i18n_", messageName, "_", lang, ")(nil)")
+		}
+		g.P(")")
+		g.P()
+
+		// Generate implementations.
+		for _, lang := range langs {
+			g.P("type i18n_", messageName, "_", lang, " struct{}")
 			g.P()
-			g.P(fmt.Sprintf(`var %s_%s %s = (*%s_%s)(nil)`, Prefix, lang, Prefix, prefix, lang))
-			g.P()
-			g.P(fmt.Sprintf(`type %s_%s struct{}`, prefix, lang))
-			g.P()
-			transes := transesByLang[lang]
-			for _, field := range fields {
-				g.P(fmt.Sprintf(`func (*%s_%s) %s() string { return %q }`, prefix, lang, field, transes[field]))
+			for _, f := range m.Fields {
+				fieldName := f.GoName
+				var text string
+				if textByFieldName, ok := transesByLang[lang]; ok {
+					text = textByFieldName[fieldName]
+				}
+				g.P("func (*i18n_", messageName, "_", lang, ")", fieldName, "() string { return ", strconv.Quote(text), "}")
+				g.P()
 			}
 		}
 	}

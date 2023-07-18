@@ -9,6 +9,14 @@ extend google.protobuf.FileOptions {
     optional FileOptions fileOptions = 1334; // Extension number not registered yet.
 }
 
+extend google.protobuf.EnumOptions {
+    optional EnumOptions enumOptions = 1334; // Extension number not registered yet.
+}
+
+extend google.protobuf.MessageOptions {
+    optional MessageOptions messageOptions = 1334; // Extension number not registered yet.
+}
+
 extend google.protobuf.EnumValueOptions {
     optional I18n enum = 1334; // Extension number not registered yet.
 }
@@ -20,6 +28,14 @@ extend google.protobuf.FieldOptions {
 message FileOptions {
     optional bool enable = 1;
     optional string suffix = 2;
+}
+
+message EnumOptions {
+    optional bool enable = 1;
+}
+
+message MessageOptions {
+    optional bool enable = 1;
 }
 
 // Language codes from: https://www.andiamo.co.uk/resources/iso-language-codes/
@@ -275,3 +291,257 @@ message I18n {
     // Zulu
     optional string zu = 125;
 }
+
+//enum Language {
+//    LanguageUnspecified = 0;
+//    // Afrikaans
+//    af = 1;
+//    // Albanian
+//    sq = 2;
+//    // Arabic (Algeria)
+//    ar_dz = 3;
+//    // Arabic (Bahrain)
+//    ar_bh = 4;
+//    // Arabic (Egypt)
+//    ar_eg = 5;
+//    // Arabic (Iraq)
+//    ar_iq = 6;
+//    // Arabic (Jordan)
+//    ar_jo = 7;
+//    // Arabic (Kuwait)
+//    ar_kw = 8;
+//    // Arabic (Lebanon)
+//    ar_lb = 9;
+//    // Arabic (Libya)
+//    ar_ly = 10;
+//    // Arabic (Morocco)
+//    ar_ma = 11;
+//    // Arabic (Oman)
+//    ar_om = 12;
+//    // Arabic (Qatar)
+//    ar_qa = 13;
+//    // Arabic (Saudi Arabia)
+//    ar_sa = 14;
+//    // Arabic (Syria)
+//    ar_sy = 15;
+//    // Arabic (Tunisia)
+//    ar_tn = 16;
+//    // Arabic (U.A.E.)
+//    ar_ae = 17;
+//    // Arabic (Yemen)
+//    ar_ye = 18;
+//    // Basque
+//    eu = 19;
+//    // Belarusian
+//    be = 20;
+//    // Bulgarian
+//    bg = 21;
+//    // Catalan
+//    ca = 22;
+//    // Chinese (Hong Kong)
+//    zh_hk = 23;
+//    // Chinese (PRC)
+//    zh_cn = 24;
+//    // Chinese (Singapore)
+//    zh_sg = 25;
+//    // Chinese (Taiwan)
+//    zh_tw = 26;
+//    // Croatian
+//    hr = 27;
+//    // Czech
+//    cs = 28;
+//    // Danish
+//    da = 29;
+//    // Dutch (Belgium)
+//    nl_be = 30;
+//    // Dutch (Standard)
+//    nl = 31;
+//    // English
+//    en = 32;
+//    // English (Australia)
+//    en_au = 33;
+//    // English (Belize)
+//    en_bz = 34;
+//    // English (Canada)
+//    en_ca = 35;
+//    // English (Ireland)
+//    en_ie = 36;
+//    // English (Jamaica)
+//    en_jm = 37;
+//    // English (New Zealand)
+//    en_nz = 38;
+//    // English (South Africa)
+//    en_za = 39;
+//    // English (Trinidad)
+//    en_tt = 40;
+//    // English (United Kingdom)
+//    en_gb = 41;
+//    // English (United States)
+//    en_us = 42;
+//    // Estonian
+//    et = 43;
+//    // Faeroese
+//    fo = 44;
+//    // Farsi
+//    fa = 45;
+//    // Finnish
+//    fi = 46;
+//    // French (Belgium)
+//    fr_be = 47;
+//    // French (Canada)
+//    fr_ca = 48;
+//    // French (Luxembourg)
+//    fr_lu = 49;
+//    // French (Standard)
+//    fr = 50;
+//    // French (Switzerland)
+//    fr_ch = 51;
+//    // Gaelic (Scotland)
+//    gd = 52;
+//    // German (Austria)
+//    de_at = 53;
+//    // German (Liechtenstein)
+//    de_li = 54;
+//    // German (Luxembourg)
+//    de_lu = 55;
+//    // German (Standard)
+//    de = 56;
+//    // German (Switzerland)
+//    de_ch = 57;
+//    // Greek
+//    el = 58;
+//    // Hebrew
+//    he = 59;
+//    // Hindi
+//    hi = 60;
+//    // Hungarian
+//    hu = 61;
+//    // Icelandic
+//    is = 62;
+//    // Indonesian
+//    id = 63;
+//    // Irish
+//    ga = 64;
+//    // Italian (Standard)
+//    it = 65;
+//    // Italian (Switzerland)
+//    it_ch = 66;
+//    // Japanese
+//    ja = 67;
+//    // Korean
+//    ko = 68;
+//    // Korean (Johab)
+//    //ko = 69;
+//    // Kurdish
+//    ku = 70;
+//    // Latvian
+//    lv = 71;
+//    // Lithuanian
+//    lt = 72;
+//    // Macedonian (FYROM)
+//    mk = 73;
+//    // Malayalam
+//    ml = 74;
+//    // Malaysian
+//    ms = 75;
+//    // Maltese
+//    mt = 76;
+//    // Norwegian
+//    no = 77;
+//    // Norwegian (Bokmål)
+//    nb = 78;
+//    // Norwegian (Nynorsk)
+//    nn = 79;
+//    // Polish
+//    pl = 80;
+//    // Portuguese (Brazil)
+//    pt_br = 81;
+//    // Portuguese (Portugal)
+//    pt = 82;
+//    // Punjabi
+//    pa = 83;
+//    // Rhaeto-Romanic
+//    rm = 84;
+//    // Romanian
+//    ro = 85;
+//    // Romanian (Republic of Moldova)
+//    ro_md = 86;
+//    // Russian
+//    ru = 87;
+//    // Russian (Republic of Moldova)
+//    ru_md = 88;
+//    // Serbian
+//    sr = 89;
+//    // Slovak
+//    sk = 90;
+//    // Slovenian
+//    sl = 91;
+//    // Sorbian
+//    sb = 92;
+//    // Spanish (Argentina)
+//    es_ar = 93;
+//    // Spanish (Bolivia)
+//    es_bo = 94;
+//    // Spanish (Chile)
+//    es_cl = 95;
+//    // Spanish (Colombia)
+//    es_co = 96;
+//    // Spanish (Costa Rica)
+//    es_cr = 97;
+//    // Spanish (Dominican Republic)
+//    es_do = 98;
+//    // Spanish (Ecuador)
+//    es_ec = 99;
+//    // Spanish (El Salvador)
+//    es_sv = 100;
+//    // Spanish (Guatemala)
+//    es_gt = 101;
+//    // Spanish (Honduras)
+//    es_hn = 102;
+//    // Spanish (Mexico)
+//    es_mx = 103;
+//    // Spanish (Nicaragua)
+//    es_ni = 104;
+//    // Spanish (Panama)
+//    es_pa = 105;
+//    // Spanish (Paraguay)
+//    es_py = 106;
+//    // Spanish (Peru)
+//    es_pe = 107;
+//    // Spanish (Puerto Rico)
+//    es_pr = 108;
+//    // Spanish (Spain)
+//    es = 109;
+//    // Spanish (Uruguay)
+//    es_uy = 110;
+//    // Spanish (Venezuela)
+//    es_ve = 111;
+//    // Swedish
+//    sv = 112;
+//    // Swedish (Finland)
+//    sv_fi = 113;
+//    // Thai
+//    th = 114;
+//    // Tsonga
+//    ts = 115;
+//    // Tswana
+//    tn = 116;
+//    // Turkish
+//    tr = 117;
+//    // Ukrainian
+//    ua = 118;
+//    // Urdu
+//    ur = 119;
+//    // Venda
+//    ve = 120;
+//    // Vietnamese
+//    vi = 121;
+//    // Welsh
+//    cy = 122;
+//    // Xhosa
+//    xh = 123;
+//    // Yiddish
+//    ji = 124;
+//    // Zulu
+//    zu = 125;
+//}
