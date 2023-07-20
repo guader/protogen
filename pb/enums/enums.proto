@@ -9,19 +9,7 @@ extend google.protobuf.FileOptions {
     optional FileOptions fileOptions = 1335; // Extension number not registered yet.
 }
 
-//extend google.protobuf.EnumOptions {
-//    optional EnumOptions enumOptions = 1335; // Extension number not registered yet.
-//}
-
 message FileOptions {
     optional bool enable = 1;
     optional string suffix = 2;
 }
-
-//message EnumOptions {
-//    optional Parser parser = 1;
-//}
-
-//message Parser {
-//    optional int32 default = 1;
-//}

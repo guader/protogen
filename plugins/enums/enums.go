@@ -51,35 +51,12 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 		g.P("}")
 		g.P()
 
-		// Generate validate function.
+		// Generate validation function.
 		g.P("func (x ", typ, ") IsValid() bool {")
 		g.P("_, ok := ", typ, "_name[int32(x)]")
 		g.P("return ok")
 		g.P("}")
 		g.P()
-
-		//enumOpts := pkg.ProtoGetExtension[enums.EnumOptions](e.Desc.Options(), enums.E_EnumOptions)
-
-		// Generate parser functions.
-		//number := enumOpts.GetParser().GetDefault()
-		//value := e.Values[0]
-		//for _, v := range e.Values {
-		//	if int32(v.Desc.Number()) == number {
-		//		value = v
-		//		break
-		//	}
-		//}
-		//number = int32(value.Desc.Number())
-		//
-		//g.P("func (x *", typ, ") FromString(s string) {")
-		//g.P("if i, ok := ", typ, "_value[s]; ok {")
-		//g.P("*x = ", typ, "(i)")
-		//g.P("} else {")
-		//g.P("// Default value: ", number, ".")
-		//g.P("*x = ", value.GoIdent.GoName)
-		//g.P("}")
-		//g.P("}")
-		//g.P()
 	}
 }
 
