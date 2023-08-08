@@ -57,6 +57,10 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 		}
 
 		for _, f := range m.Fields {
+			if f.Desc.IsList() || f.Desc.IsMap() {
+				continue
+			}
+
 			switch f.Desc.Kind() {
 			case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
 				protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
