@@ -70,6 +70,8 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 				generateNumber(g, m, f)
 			case protoreflect.StringKind:
 				generateString(g, m, f)
+			case protoreflect.EnumKind:
+				generateEnumerate(g, m, f)
 			}
 		}
 
@@ -164,6 +166,39 @@ func generateString(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	g.P("}")
 
 	g.P("return nil")
+	g.P("}")
+	g.P()
+}
+
+func generateEnumerate(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
+	mname := m.GoIdent.GoName
+	fname := f.GoName
+	ename := g.QualifiedGoIdent(f.Enum.GoIdent)
+	fullName := mname + "." + fname
+
+	// slice
+	g.P("func (x *", mname, ") Assert", fname, "InSlice(vs ...", ename, ") error {")
+	g.P("v := x.Get", fname, "()")
+	g.P("for _, valid := range vs {")
+	g.P("if v == valid {")
+	g.P("return nil")
+	g.P("}")
+	g.P("}")
+	g.P(`return fmt.Errorf("`, fullName, ` must be in %v, value: %v", vs, v)`)
+	g.P("}")
+	g.P()
+
+	// map
+	g.P("func (x *", mname, ") Assert", fname, "InMap(m map[", ename, "]struct{}) error {")
+	g.P("v := x.Get", fname, "()")
+	g.P("if _, ok := m[v]; ok {")
+	g.P("return nil")
+	g.P("}")
+	g.P("vs := make([]", ename, ", 0, len(m))")
+	g.P("for valid := range m {")
+	g.P("vs = append(vs, valid)")
+	g.P("}")
+	g.P(`return fmt.Errorf("`, fullName, ` must be in %v, value: %v", vs, v)`)
 	g.P("}")
 	g.P()
 }
