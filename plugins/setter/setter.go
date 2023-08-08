@@ -33,23 +33,6 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P("package ", file.GoPackageName)
 		g.P()
 
-		// https://github.com/protocolbuffers/protobuf-go/blob/v1.28.1/cmd/protoc-gen-go/internal_gengo/main.go
-		// Blank imports are automatically handled by g.Import.
-		// Packages referenced by g.QualifiedGoIdent are automatically imported.
-		// See documents for g.Import.
-		//for i := 0; i < file.Desc.Imports().Len(); i++ {
-		//	imp := file.Desc.Imports().Get(i)
-		//	f, ok := plugin.FilesByPath[imp.Path()]
-		//	if !ok {
-		//		continue
-		//	}
-		//	// Do not import self.
-		//	if f.GoImportPath == file.GoImportPath || imp.IsWeak {
-		//		continue
-		//	}
-		//	g.Import(f.GoImportPath)
-		//}
-
 		generate(g, file.Messages)
 	}
 	return nil

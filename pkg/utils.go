@@ -27,6 +27,7 @@ func RenderPackageComments(version, plugin, source string) string {
 `, version, plugin, source)
 }
 
+// Deprecated: use FieldGoType or FieldGoTypeName instead.
 func GoFieldTypeInfo(g *protogen.GeneratedFile, field *protogen.Field) (string, string, bool) {
 	var (
 		idt     string // identifier
@@ -89,4 +90,53 @@ func GoFieldTypeInfo(g *protogen.GeneratedFile, field *protogen.Field) (string, 
 	}
 
 	return star + idt, dft, hasStar
+}
+
+// https://github.com/protocolbuffers/protobuf-go/blob/v1.31.0/cmd/protoc-gen-go/internal_gengo/main.go#L641
+func FieldGoType(g *protogen.GeneratedFile, field *protogen.Field) (goType string, pointer bool) {
+	pointer = field.Desc.HasPresence()
+	switch field.Desc.Kind() {
+	case protoreflect.BoolKind:
+		goType = "bool"
+	case protoreflect.EnumKind:
+		goType = g.QualifiedGoIdent(field.Enum.GoIdent)
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
+		goType = "int32"
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
+		goType = "uint32"
+	case protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+		goType = "int64"
+	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+		goType = "uint64"
+	case protoreflect.FloatKind:
+		goType = "float32"
+	case protoreflect.DoubleKind:
+		goType = "float64"
+	case protoreflect.StringKind:
+		goType = "string"
+	case protoreflect.BytesKind:
+		goType = "[]byte"
+		pointer = false // rely on nullability of slices for presence
+	case protoreflect.MessageKind, protoreflect.GroupKind:
+		goType = "*" + g.QualifiedGoIdent(field.Message.GoIdent)
+		pointer = false // pointer captured as part of the type
+	}
+	switch {
+	case field.Desc.IsList():
+		return "[]" + goType, false
+	case field.Desc.IsMap():
+		keyType, _ := FieldGoType(g, field.Message.Fields[0])
+		valType, _ := FieldGoType(g, field.Message.Fields[1])
+		return fmt.Sprintf("map[%v]%v", keyType, valType), false
+	}
+	return goType, pointer
+}
+
+func FieldGoTypeName(g *protogen.GeneratedFile, field *protogen.Field) string {
+	goType, pointer := FieldGoType(g, field)
+	var star string
+	if pointer {
+		star = "*"
+	}
+	return star + goType
 }

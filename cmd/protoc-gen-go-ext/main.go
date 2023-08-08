@@ -4,6 +4,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 
+	"github.com/guader/protogen/plugins/assert"
 	"github.com/guader/protogen/plugins/consts"
 	"github.com/guader/protogen/plugins/enums"
 	"github.com/guader/protogen/plugins/i18n"
@@ -21,6 +22,7 @@ func generate(plugin *protogen.Plugin) error {
 		consts.Generate,
 		i18n.Generate,
 		enums.Generate,
+		assert.Generate,
 	} {
 		if err := f(plugin); err != nil {
 			return err
