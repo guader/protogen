@@ -16,6 +16,18 @@ type NumberType interface {
 
 type AssertFunc = func() error
 
+func Assert(fns ...AssertFunc) error {
+	for _, fn := range fns {
+		if fn == nil {
+			continue
+		}
+		if err := fn(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // open: 0 for both close, 1 for left open only, 2 for right open only, 3 for both open.
 func AssertNumberRange[T NumberType](name string, v T, min, max *T, open byte) error {
 	if min != nil {
