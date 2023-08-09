@@ -57,21 +57,31 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 		}
 
 		for _, f := range m.Fields {
-			if f.Desc.IsList() || f.Desc.IsMap() {
-				continue
+			switch {
+			case f.Desc.IsList():
+				generateList(g, m, f)
+			case f.Desc.IsMap():
+				// TODO
+			default:
+				switch f.Desc.Kind() {
+				case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
+					protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
+					protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind,
+					protoreflect.Uint64Kind, protoreflect.Fixed64Kind,
+					protoreflect.FloatKind, protoreflect.DoubleKind:
+					generateNumber(g, m, f)
+				case protoreflect.StringKind:
+					generateString(g, m, f)
+				case protoreflect.EnumKind:
+					generateEnumerate(g, m, f)
+				case protoreflect.BytesKind:
+					generateBytes(g, m, f)
+				}
 			}
 
-			switch f.Desc.Kind() {
-			case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
-				protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
-				protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind,
-				protoreflect.Uint64Kind, protoreflect.Fixed64Kind,
-				protoreflect.FloatKind, protoreflect.DoubleKind:
-				generateNumber(g, m, f)
-			case protoreflect.StringKind:
-				generateString(g, m, f)
-			case protoreflect.EnumKind:
-				generateEnumerate(g, m, f)
+			// nillable
+			if pkg.FieldGoTypeNillable(f) {
+				generateNillable(g, m, f)
 			}
 		}
 
@@ -157,11 +167,11 @@ func generateString(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	g.P("v := x.Get", fname, "()")
 	g.P("n := utf8.RuneCountInString(v)")
 
-	g.P("if min >0 && n < min {")
+	g.P("if min > 0 && n < min {")
 	g.P(`return fmt.Errorf("`, fullName, ` rune count must be greater or equal than %d, count: %d, value: %q", min, n, v)`)
 	g.P("}")
 
-	g.P("if max >0 && n > max {")
+	g.P("if max > 0 && n > max {")
 	g.P(`return fmt.Errorf("`, fullName, ` rune count must be less or equal than %d, count: %d, value: %q", max, n, v)`)
 	g.P("}")
 
@@ -199,6 +209,81 @@ func generateEnumerate(g *protogen.GeneratedFile, m *protogen.Message, f *protog
 	g.P("vs = append(vs, valid)")
 	g.P("}")
 	g.P(`return fmt.Errorf("`, fullName, ` must be in %v, value: %v", vs, v)`)
+	g.P("}")
+	g.P()
+}
+
+func generateBytes(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
+	mname := m.GoIdent.GoName
+	fname := f.GoName
+	fullName := mname + "." + fname
+
+	g.P("// min, max: 0 for unlimited, rune count must be in [min, max].")
+	g.P("func (x *", mname, ") Assert", fname, "BytesCountRange(min, max int) error {")
+	g.P("v := x.Get", fname, "()")
+	g.P("n := len(v)")
+
+	g.P("if min > 0 && n < min {")
+	g.P(`return fmt.Errorf("`, fullName, ` bytes count must be greater or equal than %d, count: %d", min, n)`)
+	g.P("}")
+
+	g.P("if max > 0 && n > max {")
+	g.P(`return fmt.Errorf("`, fullName, ` bytes count must be less or equal than %d, count: %d", max, n)`)
+	g.P("}")
+
+	g.P("return nil")
+	g.P("}")
+	g.P()
+}
+
+func generateList(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
+	mname := m.GoIdent.GoName
+	fname := f.GoName
+	fullName := mname + "." + fname
+
+	g.P("// min, max: 0 for unlimited, rune count must be in [min, max].")
+	g.P("func (x *", mname, ") Assert", fname, "ItemCountRange(min, max int) error {")
+	g.P("v := x.Get", fname, "()")
+	g.P("n := len(v)")
+
+	g.P("if min > 0 && n < min {")
+	g.P(`return fmt.Errorf("`, fullName, ` item count must be greater or equal than %d, count: %d", min, n)`)
+	g.P("}")
+
+	g.P("if max > 0 && n > max {")
+	g.P(`return fmt.Errorf("`, fullName, ` item count must be less or equal than %d, count: %d", max, n)`)
+	g.P("}")
+
+	g.P("return nil")
+	g.P("}")
+	g.P()
+
+	// nillable
+	//if f.Desc.Kind() == protoreflect.BytesKind ||
+	//	f.Desc.Kind() == protoreflect.MessageKind ||
+	//	f.Desc.Kind() == protoreflect.GroupKind {
+	//	g.P("func (x *", mname, ") Assert", fname, "ItemNonNil() error {")
+	//	g.P("for i, item := range x.Get", fname, "() {")
+	//	g.P("if item == nil {")
+	//	g.P(`return fmt.Errorf("`, fullName, ` item must not be nil, index: %d", i)`)
+	//	g.P("}")
+	//	g.P("}")
+	//	g.P("return nil")
+	//	g.P("}")
+	//	g.P()
+	//}
+}
+
+func generateNillable(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
+	mname := m.GoIdent.GoName
+	fname := f.GoName
+	fullName := mname + "." + fname
+
+	g.P("func (x *", mname, ") Assert", fname, "NonNil() error {")
+	g.P("if x == nil || x.", fname, " == nil {")
+	g.P(`return fmt.Errorf("`, fullName, ` must not be nil")`)
+	g.P("}")
+	g.P("return nil")
 	g.P("}")
 	g.P()
 }

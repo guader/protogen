@@ -140,3 +140,12 @@ func FieldGoTypeName(g *protogen.GeneratedFile, field *protogen.Field) string {
 	}
 	return star + goType
 }
+
+func FieldGoTypeNillable(field *protogen.Field) bool {
+	return field.Desc.IsList() ||
+		field.Desc.IsMap() ||
+		field.Desc.Kind() == protoreflect.BytesKind ||
+		field.Desc.Kind() == protoreflect.MessageKind ||
+		field.Desc.Kind() == protoreflect.GroupKind ||
+		field.Desc.HasPresence()
+}
