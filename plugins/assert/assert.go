@@ -2,6 +2,7 @@ package assert
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -13,6 +14,7 @@ import (
 )
 
 func Generate(plugin *protogen.Plugin) error {
+	commonGeneratedPkgs := make(map[protogen.GoImportPath]struct{})
 	for _, file := range plugin.Files {
 		if !file.Generate {
 			continue
@@ -44,6 +46,27 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P(")")
 		g.P()
 
+		if _, ok := commonGeneratedPkgs[file.GoImportPath]; !ok {
+			cprefix := file.GeneratedFilenamePrefix
+			cprefix = filepath.Dir(cprefix)
+			cprefix = filepath.Join(cprefix, string(file.GoPackageName))
+
+			csuffix := suffix + ".common"
+
+			cg := plugin.NewGeneratedFile(fmt.Sprintf("%s%s.go", cprefix, csuffix), file.GoImportPath)
+			cg.P(pkg.RenderPackageComments(version.Version, "assert", string(file.GoPackageName)))
+			cg.P("package ", file.GoPackageName)
+			cg.P()
+			cg.P("import (")
+			cg.P(`"fmt"`)
+			cg.P(`"unicode/utf8"`)
+			cg.P(")")
+			cg.P()
+
+			generateCommon(cg)
+			commonGeneratedPkgs[file.GoImportPath] = struct{}{}
+		}
+
 		generateMessages(g, file.Messages)
 	}
 	return nil
@@ -59,7 +82,7 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 		for _, f := range m.Fields {
 			switch {
 			case f.Desc.IsList():
-				generateList(g, m, f)
+				generateSlice(g, m, f)
 			case f.Desc.IsMap():
 				// TODO
 			default:
@@ -89,6 +112,113 @@ func generateMessages(g *protogen.GeneratedFile, ms []*protogen.Message) {
 	}
 }
 
+const (
+	assertFuncTypeName = "AssertFunc"
+
+	assertNumberRangeFuncName      = "AssertNumberRange"
+	assertNumberInSliceFuncName    = "AssertNumberInSlice"
+	assertNumberInMapFuncName      = "AssertNumberInMap"
+	assertRuneCountRangeFuncName   = "AssertRuneCountRange"
+	assertSliceLengthRangeFuncName = "AssertSliceLengthRange"
+)
+
+func generateCommon(g *protogen.GeneratedFile) {
+	// interface
+	g.P(`type NumberType interface {
+	~int32 | ~int64 | ~uint32 | ~uint64 | ~float32 | ~float64
+}`)
+	g.P()
+
+	// types
+	g.P("type ", assertFuncTypeName, " = func() error")
+	g.P()
+
+	// number range
+	g.P("// open: 0 for both close, 1 for left open only, 2 for right open only, 3 for both open.")
+	g.P("func ", assertNumberRangeFuncName, "[T NumberType](name string, v T, min, max *T, open byte) error {")
+	g.P(`if min != nil {
+		if open&1 == 0 {
+			// left close
+			if v < *min {
+				return fmt.Errorf("%s must be greater or equal than %v, value: %v", name, *min, v)
+			}
+		} else {
+			// left open
+			if v <= *min {
+				return fmt.Errorf("%s must be greater than %v, value: %v", name, *min, v)
+			}
+		}
+	}
+	if max != nil {
+		if open&2 == 0 {
+			// right close
+			if v > *max {
+				return fmt.Errorf("%s must be less or equal than %v, value: %v", name, *max, v)
+			}
+		} else {
+			// right open
+			if v >= *max {
+				return fmt.Errorf("%s must be less than %v, value: %v", name, *max, v)
+			}
+		}
+	}
+	return nil`)
+	g.P("}")
+	g.P()
+
+	// number in slice
+	g.P("func ", assertNumberInSliceFuncName, "[T NumberType](name string, v T, vs ...T) error {")
+	g.P(`for _, valid := range vs {
+		if valid == v {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s must be in %v, value: %v", name, vs, v)`)
+	g.P("}")
+	g.P()
+
+	// number in map
+	g.P("func ", assertNumberInMapFuncName, "[T NumberType](name string, v T, m map[T]struct{}) error {")
+	g.P(`if _, ok := m[v]; ok {
+		return nil
+	}
+	vs := make([]T, 0, len(m))
+	for valid := range m {
+		vs = append(vs, valid)
+	}
+	return fmt.Errorf("%s must be in %v, value: %v", name, vs, v)`)
+	g.P("}")
+	g.P()
+
+	// string rune count
+	g.P("// min, max: 0 for unlimited, rune count must be in range [min, max].")
+	g.P("func ", assertRuneCountRangeFuncName, "(name string, v string, min, max int) error {")
+	g.P(`n := utf8.RuneCountInString(v)
+		if min > 0 && n < min {
+			return fmt.Errorf("%s rune count must be greater or equal than %d, count: %d, value: %q", name, min, n, v)
+		}
+		if max > 0 && n > max {
+			return fmt.Errorf("%s rune count must be less or equal than %d, count: %d, value: %q", name, max, n, v)
+		}
+		return nil`)
+	g.P("}")
+	g.P()
+
+	// slice length
+	g.P("// min, max: 0 for unlimited, slice length must be in range [min, max].")
+	g.P("func ", assertSliceLengthRangeFuncName, "[T any](name string, v []T, min, max int) error {")
+	g.P(`n := len(v)
+	if min > 0 && n < min {
+		return fmt.Errorf("%s slice length must be greater or equal than %d, count: %d", name, min, n)
+	}
+	if max > 0 && n > max {
+		return fmt.Errorf("%s slice length must be less or equal than %d, count: %d", name, max, n)
+	}
+	return nil`)
+	g.P("}")
+	g.P()
+}
+
 func generateNumber(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
 	typ, _ := pkg.FieldGoType(g, f)
 	mname := m.GoIdent.GoName
@@ -98,37 +228,11 @@ func generateNumber(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	// range
 	g.P("// open: 0 for both close, 1 for left open only, 2 for right open only, 3 for both open.")
 	g.P("func (x *", mname, ") Assert", fname, "Range(min, max *", typ, ", open byte) error {")
-	g.P("v := x.Get", fname, "()")
-
-	g.P("if min != nil {")
-	g.P("if open&1 == 0 {")
-	g.P("// left close")
-	g.P("if v < *min {")
-	g.P(`return fmt.Errorf("`, fullName, ` must be greater or equal than %v, value: %v", *min, v)`)
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), min, max, open)", assertNumberRangeFuncName, fullName, fname))
 	g.P("}")
-	g.P("} else {")
-	g.P("// left open")
-	g.P("if v <= *min {")
-	g.P(`return fmt.Errorf("`, fullName, ` must be greater than %v, value: %v", *min, v)`)
-	g.P("}")
-	g.P("}")
-	g.P("}")
-
-	g.P("if max != nil {")
-	g.P("if open&2 == 0 {")
-	g.P("// right close")
-	g.P("if v > *max {")
-	g.P(`return fmt.Errorf("`, fullName, ` must be less or equal than %v, value: %v", *max, v)`)
-	g.P("}")
-	g.P("} else {")
-	g.P("// right open")
-	g.P("if v >= *max {")
-	g.P(`return fmt.Errorf("`, fullName, ` must be less than %v, value: %v", *max, v)`)
-	g.P("}")
-	g.P("}")
-	g.P("}")
-
-	g.P("return nil")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "RangeFunc(min, max *", typ, ", open byte) ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "Range(min, max, open) }")
 	g.P("}")
 	g.P()
 
@@ -137,10 +241,18 @@ func generateNumber(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	g.P("return x.Assert", fname, "Range(&min, nil, 1)")
 	g.P("}")
 	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "GreaterFunc(min ", typ, ") ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "Greater(min) }")
+	g.P("}")
+	g.P()
 
 	// greater or equal
 	g.P("func (x *", mname, ") Assert", fname, "GreaterOrEqual(min ", typ, ") error {")
 	g.P("return x.Assert", fname, "Range(&min, nil, 0)")
+	g.P("}")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "GreaterOrEqualFunc(min ", typ, ") ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "GreaterOrEqual(min) }")
 	g.P("}")
 	g.P()
 
@@ -149,10 +261,18 @@ func generateNumber(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	g.P("return x.Assert", fname, "Range(nil, &max, 1)")
 	g.P("}")
 	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "LessFunc(max ", typ, ") ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "Less(max) }")
+	g.P("}")
+	g.P()
 
 	// less or equal
 	g.P("func (x *", mname, ") Assert", fname, "LessOrEqual(max ", typ, ") error {")
 	g.P("return x.Assert", fname, "Range(nil, &max, 0)")
+	g.P("}")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "LessOrEqualFunc(max ", typ, ") ", assertFuncTypeName, " {")
+	g.P("return func() error { return  x.Assert", fname, "LessOrEqual(max) }")
 	g.P("}")
 	g.P()
 }
@@ -162,20 +282,13 @@ func generateString(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.
 	fname := f.GoName
 	fullName := mname + "." + fname
 
-	g.P("// min, max: 0 for unlimited, rune count must be in [min, max].")
+	g.P("// min, max: 0 for unlimited, rune count must be in range [min, max].")
 	g.P("func (x *", mname, ") Assert", fname, "RuneCountRange(min, max int) error {")
-	g.P("v := x.Get", fname, "()")
-	g.P("n := utf8.RuneCountInString(v)")
-
-	g.P("if min > 0 && n < min {")
-	g.P(`return fmt.Errorf("`, fullName, ` rune count must be greater or equal than %d, count: %d, value: %q", min, n, v)`)
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), min, max)", assertRuneCountRangeFuncName, fullName, fname))
 	g.P("}")
-
-	g.P("if max > 0 && n > max {")
-	g.P(`return fmt.Errorf("`, fullName, ` rune count must be less or equal than %d, count: %d, value: %q", max, n, v)`)
-	g.P("}")
-
-	g.P("return nil")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "RuneCountRangeFunc(min, max int) ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "RuneCountRange(min, max) }")
 	g.P("}")
 	g.P()
 }
@@ -188,27 +301,21 @@ func generateEnumerate(g *protogen.GeneratedFile, m *protogen.Message, f *protog
 
 	// slice
 	g.P("func (x *", mname, ") Assert", fname, "InSlice(vs ...", ename, ") error {")
-	g.P("v := x.Get", fname, "()")
-	g.P("for _, valid := range vs {")
-	g.P("if v == valid {")
-	g.P("return nil")
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), vs...)", assertNumberInSliceFuncName, fullName, fname))
 	g.P("}")
-	g.P("}")
-	g.P(`return fmt.Errorf("`, fullName, ` must be in %v, value: %v", vs, v)`)
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "InSliceFunc(vs ...", ename, ") ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "InSlice(vs...) }")
 	g.P("}")
 	g.P()
 
 	// map
 	g.P("func (x *", mname, ") Assert", fname, "InMap(m map[", ename, "]struct{}) error {")
-	g.P("v := x.Get", fname, "()")
-	g.P("if _, ok := m[v]; ok {")
-	g.P("return nil")
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), m)", assertNumberInMapFuncName, fullName, fname))
 	g.P("}")
-	g.P("vs := make([]", ename, ", 0, len(m))")
-	g.P("for valid := range m {")
-	g.P("vs = append(vs, valid)")
-	g.P("}")
-	g.P(`return fmt.Errorf("`, fullName, ` must be in %v, value: %v", vs, v)`)
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "InMapFunc(m map[", ename, "]struct{}) ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "InMap(m) }")
 	g.P("}")
 	g.P()
 }
@@ -218,43 +325,29 @@ func generateBytes(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.F
 	fname := f.GoName
 	fullName := mname + "." + fname
 
-	g.P("// min, max: 0 for unlimited, rune count must be in [min, max].")
+	g.P("// min, max: 0 for unlimited, bytes count must be in range [min, max].")
 	g.P("func (x *", mname, ") Assert", fname, "BytesCountRange(min, max int) error {")
-	g.P("v := x.Get", fname, "()")
-	g.P("n := len(v)")
-
-	g.P("if min > 0 && n < min {")
-	g.P(`return fmt.Errorf("`, fullName, ` bytes count must be greater or equal than %d, count: %d", min, n)`)
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), min, max)", assertSliceLengthRangeFuncName, fullName, fname))
 	g.P("}")
-
-	g.P("if max > 0 && n > max {")
-	g.P(`return fmt.Errorf("`, fullName, ` bytes count must be less or equal than %d, count: %d", max, n)`)
-	g.P("}")
-
-	g.P("return nil")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "BytesCountRangeFunc(min, max int) ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "BytesCountRange(min, max) }")
 	g.P("}")
 	g.P()
 }
 
-func generateList(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
+func generateSlice(g *protogen.GeneratedFile, m *protogen.Message, f *protogen.Field) {
 	mname := m.GoIdent.GoName
 	fname := f.GoName
 	fullName := mname + "." + fname
 
-	g.P("// min, max: 0 for unlimited, rune count must be in [min, max].")
+	g.P("// min, max: 0 for unlimited, item count must be in range [min, max].")
 	g.P("func (x *", mname, ") Assert", fname, "ItemCountRange(min, max int) error {")
-	g.P("v := x.Get", fname, "()")
-	g.P("n := len(v)")
-
-	g.P("if min > 0 && n < min {")
-	g.P(`return fmt.Errorf("`, fullName, ` item count must be greater or equal than %d, count: %d", min, n)`)
+	g.P(fmt.Sprintf("return %s(%q, x.Get%s(), min, max)", assertSliceLengthRangeFuncName, fullName, fname))
 	g.P("}")
-
-	g.P("if max > 0 && n > max {")
-	g.P(`return fmt.Errorf("`, fullName, ` item count must be less or equal than %d, count: %d", max, n)`)
-	g.P("}")
-
-	g.P("return nil")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "ItemCountRangeFunc(min, max int) ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "ItemCountRange(min, max) }")
 	g.P("}")
 	g.P()
 
@@ -284,6 +377,10 @@ func generateNillable(g *protogen.GeneratedFile, m *protogen.Message, f *protoge
 	g.P(`return fmt.Errorf("`, fullName, ` must not be nil")`)
 	g.P("}")
 	g.P("return nil")
+	g.P("}")
+	g.P()
+	g.P("func (x *", mname, ") Assert", fname, "NonNilFunc() ", assertFuncTypeName, " {")
+	g.P("return func() error { return x.Assert", fname, "NonNil() }")
 	g.P("}")
 	g.P()
 }
