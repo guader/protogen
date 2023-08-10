@@ -9,7 +9,7 @@ func generateNillable(g *protogen.GeneratedFile, m *protogen.Message, f *protoge
 	fname := f.GoName
 	fullName := mname + "." + fname
 
-	g.P("func (x *", mname, ") Assert", fname, "_NonNil() AssertFunc {")
+	g.P("func (x *", mname, ") Assert_", fname, "_NonNil() AssertFunc {")
 	g.P("return func() error {")
 	g.P("if x == nil || x.", fname, " == nil {")
 	g.P(`return fmt.Errorf("`, fullName, ` must not be nil")`)

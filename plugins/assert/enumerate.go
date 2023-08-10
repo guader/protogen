@@ -13,7 +13,7 @@ func generateEnumerate(g *protogen.GeneratedFile, m *protogen.Message, f *protog
 	fullName := mname + "." + fname
 
 	// slice
-	g.P("func (x *", mname, ") Assert", fname, "_InSlice(vs ...", ename, ") AssertFunc {")
+	g.P("func (x *", mname, ") Assert_", fname, "_InSlice(vs ...", ename, ") AssertFunc {")
 	g.P("return func() error {")
 	g.P(fmt.Sprintf("return AssertNumberInSlice(%q, x.Get%s(), vs...)", fullName, fname))
 	g.P("}")
@@ -21,7 +21,7 @@ func generateEnumerate(g *protogen.GeneratedFile, m *protogen.Message, f *protog
 	g.P()
 
 	// map
-	g.P("func (x *", mname, ") Assert", fname, "_InMap(m map[", ename, "]struct{}) AssertFunc {")
+	g.P("func (x *", mname, ") Assert_", fname, "_InMap(m map[", ename, "]struct{}) AssertFunc {")
 	g.P("return func() error {")
 	g.P(fmt.Sprintf("return AssertNumberInMap(%q, x.Get%s(), m)", fullName, fname))
 	g.P("}")
