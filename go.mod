@@ -2,9 +2,14 @@ module github.com/guader/protogen
 
 go 1.20
 
-require google.golang.org/protobuf v1.30.0
+require (
+	google.golang.org/genproto/googleapis/api v0.0.0-20230913181813-007df8e322eb
+	google.golang.org/grpc v1.58.1
+	google.golang.org/protobuf v1.31.0
+)
 
 require (
-	google.golang.org/genproto v0.0.0-20230525234025-438c736192d0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230526203410-71b5a4ffd15e // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 )

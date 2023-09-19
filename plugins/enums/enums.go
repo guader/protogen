@@ -2,6 +2,7 @@ package enums
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -32,6 +33,16 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P(pkg.RenderPackageComments(version.Version, "enums", file.Desc.Path()))
 		g.P("package ", file.GoPackageName)
 		g.P()
+		g.P(`import (
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)`)
+		g.P()
+		g.P(`var (
+	_ = codes.Code(0)
+	_ = status.Status{}
+)`)
+		g.P()
 
 		generateEnums(g, file.Enums)
 		generateMessages(g, file.Messages)
@@ -57,6 +68,50 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 		g.P("return ok")
 		g.P("}")
 		g.P()
+
+		// Generate methods.
+		enumOpts := pkg.ProtoGetExtension[enums.EnumOptions](e.Desc.Options(), enums.E_EnumOptions)
+		if enumOpts.GetErrMethod().GetEnable() {
+			names := make([]string, 0, len(e.Values))
+			msgs := make([]string, 0, len(e.Values))
+			for _, v := range e.Values {
+				opts := pkg.ProtoGetExtension[enums.EnumValueOptions](v.Desc.Options(), enums.E_Enum)
+				if opts != nil {
+					names = append(names, v.GoIdent.GoName)
+					msgs = append(msgs, opts.GetMsg())
+				}
+			}
+
+			g.P("func (x ", typ, ") Error() string {")
+			if len(names) > 0 {
+				g.P("switch x {")
+				for i, name := range names {
+					g.P("case ", name, ":")
+					g.P("return ", strconv.Quote(msgs[i]))
+				}
+				g.P("}")
+			}
+			g.P("return x.String()")
+			g.P("}")
+			g.P()
+
+			if !enumOpts.GetErrMethod().GetWithGrpc() {
+				continue
+			}
+			g.P("// GRPCStatus implements the interface defined in status.FromError.")
+			g.P("func (x ", typ, ") GRPCStatus() *status.Status {")
+			g.P("return status.New(codes.Code(x), x.Error())")
+			g.P("}")
+			g.P()
+			g.P("func (x ", typ, ") GRPCError(msg string) error {")
+			g.P("return status.Error(codes.Code(x), msg)")
+			g.P("}")
+			g.P()
+			g.P("func (x ", typ, ") GRPCErrorf(format string, a ...any) error {")
+			g.P("return status.Errorf(codes.Code(x), format, a...)")
+			g.P("}")
+			g.P()
+		}
 	}
 }
 

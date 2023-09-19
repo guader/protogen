@@ -6,10 +6,30 @@ option go_package = "github.com/guader/protogen/pb/enums";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FileOptions {
-    optional FileOptions fileOptions = 1335; // Extension number not registered yet.
+	optional FileOptions fileOptions = 1335; // Extension number not registered yet.
+}
+
+extend google.protobuf.EnumOptions {
+	optional EnumOptions enumOptions = 1335; // Extension number not registered yet.
+}
+
+extend google.protobuf.EnumValueOptions {
+	optional EnumValueOptions enum = 1335; // Extension number not registered yet.
 }
 
 message FileOptions {
-    optional bool enable = 1;
-    optional string suffix = 2;
+	optional bool enable = 1;
+	optional string suffix = 2;
+}
+
+message EnumOptions {
+	message ErrMethod {
+		optional bool enable = 1;
+		optional bool withGrpc = 2;
+	}
+	optional ErrMethod errMethod = 1;
+}
+
+message EnumValueOptions {
+	optional string msg = 1;
 }
