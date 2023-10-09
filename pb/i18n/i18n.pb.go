@@ -1363,14 +1363,6 @@ var file_i18n_i18n_proto_extTypes = []protoimpl.ExtensionInfo{
 		Tag:           "bytes,1334,opt,name=enum",
 		Filename:      "i18n/i18n.proto",
 	},
-	{
-		ExtendedType:  (*descriptorpb.FieldOptions)(nil),
-		ExtensionType: (*I18N)(nil),
-		Field:         1334,
-		Name:          "i18n.field",
-		Tag:           "bytes,1334,opt,name=field",
-		Filename:      "i18n/i18n.proto",
-	},
 }
 
 // Extension fields to descriptorpb.FileOptions.
@@ -1395,12 +1387,6 @@ var (
 var (
 	// optional i18n.I18n enum = 1334;
 	E_Enum = &file_i18n_i18n_proto_extTypes[3] // Extension number not registered yet.
-)
-
-// Extension fields to descriptorpb.FieldOptions.
-var (
-	// optional i18n.I18n field = 1334;
-	E_Field = &file_i18n_i18n_proto_extTypes[4] // Extension number not registered yet.
 )
 
 var File_i18n_i18n_proto protoreflect.FileDescriptor
@@ -1583,13 +1569,9 @@ var file_i18n_i18n_proto_rawDesc = []byte{
 	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6e, 0x75, 0x6d, 0x56,
 	0x61, 0x6c, 0x75, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xb6, 0x0a, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x69, 0x31, 0x38, 0x6e, 0x2e, 0x49, 0x31, 0x38, 0x6e, 0x52, 0x04,
-	0x65, 0x6e, 0x75, 0x6d, 0x3a, 0x40, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x12, 0x1d, 0x2e,
-	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xb6, 0x0a, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x69, 0x31, 0x38, 0x6e, 0x2e, 0x49, 0x31, 0x38, 0x6e, 0x52,
-	0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x42, 0x24, 0x5a, 0x22, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x75, 0x61, 0x64, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x70, 0x62, 0x2f, 0x69, 0x31, 0x38, 0x6e,
+	0x65, 0x6e, 0x75, 0x6d, 0x42, 0x24, 0x5a, 0x22, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x67, 0x75, 0x61, 0x64, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x67,
+	0x65, 0x6e, 0x2f, 0x70, 0x62, 0x2f, 0x69, 0x31, 0x38, 0x6e,
 }
 
 var (
@@ -1614,24 +1596,21 @@ var file_i18n_i18n_proto_goTypes = []interface{}{
 	(*descriptorpb.EnumOptions)(nil),      // 5: google.protobuf.EnumOptions
 	(*descriptorpb.MessageOptions)(nil),   // 6: google.protobuf.MessageOptions
 	(*descriptorpb.EnumValueOptions)(nil), // 7: google.protobuf.EnumValueOptions
-	(*descriptorpb.FieldOptions)(nil),     // 8: google.protobuf.FieldOptions
 }
 var file_i18n_i18n_proto_depIdxs = []int32{
-	4,  // 0: i18n.fileOptions:extendee -> google.protobuf.FileOptions
-	5,  // 1: i18n.enumOptions:extendee -> google.protobuf.EnumOptions
-	6,  // 2: i18n.messageOptions:extendee -> google.protobuf.MessageOptions
-	7,  // 3: i18n.enum:extendee -> google.protobuf.EnumValueOptions
-	8,  // 4: i18n.field:extendee -> google.protobuf.FieldOptions
-	0,  // 5: i18n.fileOptions:type_name -> i18n.FileOptions
-	1,  // 6: i18n.enumOptions:type_name -> i18n.EnumOptions
-	2,  // 7: i18n.messageOptions:type_name -> i18n.MessageOptions
-	3,  // 8: i18n.enum:type_name -> i18n.I18n
-	3,  // 9: i18n.field:type_name -> i18n.I18n
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	5,  // [5:10] is the sub-list for extension type_name
-	0,  // [0:5] is the sub-list for extension extendee
-	0,  // [0:0] is the sub-list for field type_name
+	4, // 0: i18n.fileOptions:extendee -> google.protobuf.FileOptions
+	5, // 1: i18n.enumOptions:extendee -> google.protobuf.EnumOptions
+	6, // 2: i18n.messageOptions:extendee -> google.protobuf.MessageOptions
+	7, // 3: i18n.enum:extendee -> google.protobuf.EnumValueOptions
+	0, // 4: i18n.fileOptions:type_name -> i18n.FileOptions
+	1, // 5: i18n.enumOptions:type_name -> i18n.EnumOptions
+	2, // 6: i18n.messageOptions:type_name -> i18n.MessageOptions
+	3, // 7: i18n.enum:type_name -> i18n.I18n
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	4, // [4:8] is the sub-list for extension type_name
+	0, // [0:4] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_i18n_i18n_proto_init() }
@@ -1696,7 +1675,7 @@ func file_i18n_i18n_proto_init() {
 			RawDescriptor: file_i18n_i18n_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   4,
-			NumExtensions: 5,
+			NumExtensions: 4,
 			NumServices:   0,
 		},
 		GoTypes:           file_i18n_i18n_proto_goTypes,

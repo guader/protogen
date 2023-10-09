@@ -6,290 +6,290 @@ option go_package = "github.com/guader/protogen/pb/i18n";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FileOptions {
-    optional FileOptions fileOptions = 1334; // Extension number not registered yet.
+	optional FileOptions fileOptions = 1334; // Extension number not registered yet.
 }
 
 extend google.protobuf.EnumOptions {
-    optional EnumOptions enumOptions = 1334; // Extension number not registered yet.
+	optional EnumOptions enumOptions = 1334; // Extension number not registered yet.
 }
 
 extend google.protobuf.MessageOptions {
-    optional MessageOptions messageOptions = 1334; // Extension number not registered yet.
+	optional MessageOptions messageOptions = 1334; // Extension number not registered yet.
 }
 
 extend google.protobuf.EnumValueOptions {
-    optional I18n enum = 1334; // Extension number not registered yet.
+	optional I18n enum = 1334; // Extension number not registered yet.
 }
 
-extend google.protobuf.FieldOptions {
-    optional I18n field = 1334; // Extension number not registered yet.
-}
+//extend google.protobuf.FieldOptions {
+//    optional I18n field = 1334; // Extension number not registered yet.
+//}
 
 message FileOptions {
-    optional bool enable = 1;
-    optional string suffix = 2;
+	optional bool enable = 1;
+	optional string suffix = 2;
 }
 
 message EnumOptions {
-    optional bool enable = 1;
+	optional bool enable = 1;
 }
 
 message MessageOptions {
-    optional bool enable = 1;
+	optional bool enable = 1;
 }
 
 // Language codes from: https://www.andiamo.co.uk/resources/iso-language-codes/
 message I18n {
-    // Afrikaans
-    optional string af = 1;
-    // Albanian
-    optional string sq = 2;
-    // Arabic (Algeria)
-    optional string ar_dz = 3;
-    // Arabic (Bahrain)
-    optional string ar_bh = 4;
-    // Arabic (Egypt)
-    optional string ar_eg = 5;
-    // Arabic (Iraq)
-    optional string ar_iq = 6;
-    // Arabic (Jordan)
-    optional string ar_jo = 7;
-    // Arabic (Kuwait)
-    optional string ar_kw = 8;
-    // Arabic (Lebanon)
-    optional string ar_lb = 9;
-    // Arabic (Libya)
-    optional string ar_ly = 10;
-    // Arabic (Morocco)
-    optional string ar_ma = 11;
-    // Arabic (Oman)
-    optional string ar_om = 12;
-    // Arabic (Qatar)
-    optional string ar_qa = 13;
-    // Arabic (Saudi Arabia)
-    optional string ar_sa = 14;
-    // Arabic (Syria)
-    optional string ar_sy = 15;
-    // Arabic (Tunisia)
-    optional string ar_tn = 16;
-    // Arabic (U.A.E.)
-    optional string ar_ae = 17;
-    // Arabic (Yemen)
-    optional string ar_ye = 18;
-    // Basque
-    optional string eu = 19;
-    // Belarusian
-    optional string be = 20;
-    // Bulgarian
-    optional string bg = 21;
-    // Catalan
-    optional string ca = 22;
-    // Chinese (Hong Kong)
-    optional string zh_hk = 23;
-    // Chinese (PRC)
-    optional string zh_cn = 24;
-    // Chinese (Singapore)
-    optional string zh_sg = 25;
-    // Chinese (Taiwan)
-    optional string zh_tw = 26;
-    // Croatian
-    optional string hr = 27;
-    // Czech
-    optional string cs = 28;
-    // Danish
-    optional string da = 29;
-    // Dutch (Belgium)
-    optional string nl_be = 30;
-    // Dutch (Standard)
-    optional string nl = 31;
-    // English
-    optional string en = 32;
-    // English (Australia)
-    optional string en_au = 33;
-    // English (Belize)
-    optional string en_bz = 34;
-    // English (Canada)
-    optional string en_ca = 35;
-    // English (Ireland)
-    optional string en_ie = 36;
-    // English (Jamaica)
-    optional string en_jm = 37;
-    // English (New Zealand)
-    optional string en_nz = 38;
-    // English (South Africa)
-    optional string en_za = 39;
-    // English (Trinidad)
-    optional string en_tt = 40;
-    // English (United Kingdom)
-    optional string en_gb = 41;
-    // English (United States)
-    optional string en_us = 42;
-    // Estonian
-    optional string et = 43;
-    // Faeroese
-    optional string fo = 44;
-    // Farsi
-    optional string fa = 45;
-    // Finnish
-    optional string fi = 46;
-    // French (Belgium)
-    optional string fr_be = 47;
-    // French (Canada)
-    optional string fr_ca = 48;
-    // French (Luxembourg)
-    optional string fr_lu = 49;
-    // French (Standard)
-    optional string fr = 50;
-    // French (Switzerland)
-    optional string fr_ch = 51;
-    // Gaelic (Scotland)
-    optional string gd = 52;
-    // German (Austria)
-    optional string de_at = 53;
-    // German (Liechtenstein)
-    optional string de_li = 54;
-    // German (Luxembourg)
-    optional string de_lu = 55;
-    // German (Standard)
-    optional string de = 56;
-    // German (Switzerland)
-    optional string de_ch = 57;
-    // Greek
-    optional string el = 58;
-    // Hebrew
-    optional string he = 59;
-    // Hindi
-    optional string hi = 60;
-    // Hungarian
-    optional string hu = 61;
-    // Icelandic
-    optional string is = 62;
-    // Indonesian
-    optional string id = 63;
-    // Irish
-    optional string ga = 64;
-    // Italian (Standard)
-    optional string it = 65;
-    // Italian (Switzerland)
-    optional string it_ch = 66;
-    // Japanese
-    optional string ja = 67;
-    // Korean
-    optional string ko = 68;
-    // Korean (Johab)
-    //    optional string ko = 69;
-    // Kurdish
-    optional string ku = 70;
-    // Latvian
-    optional string lv = 71;
-    // Lithuanian
-    optional string lt = 72;
-    // Macedonian (FYROM)
-    optional string mk = 73;
-    // Malayalam
-    optional string ml = 74;
-    // Malaysian
-    optional string ms = 75;
-    // Maltese
-    optional string mt = 76;
-    // Norwegian
-    optional string no = 77;
-    // Norwegian (Bokmål)
-    optional string nb = 78;
-    // Norwegian (Nynorsk)
-    optional string nn = 79;
-    // Polish
-    optional string pl = 80;
-    // Portuguese (Brazil)
-    optional string pt_br = 81;
-    // Portuguese (Portugal)
-    optional string pt = 82;
-    // Punjabi
-    optional string pa = 83;
-    // Rhaeto-Romanic
-    optional string rm = 84;
-    // Romanian
-    optional string ro = 85;
-    // Romanian (Republic of Moldova)
-    optional string ro_md = 86;
-    // Russian
-    optional string ru = 87;
-    // Russian (Republic of Moldova)
-    optional string ru_md = 88;
-    // Serbian
-    optional string sr = 89;
-    // Slovak
-    optional string sk = 90;
-    // Slovenian
-    optional string sl = 91;
-    // Sorbian
-    optional string sb = 92;
-    // Spanish (Argentina)
-    optional string es_ar = 93;
-    // Spanish (Bolivia)
-    optional string es_bo = 94;
-    // Spanish (Chile)
-    optional string es_cl = 95;
-    // Spanish (Colombia)
-    optional string es_co = 96;
-    // Spanish (Costa Rica)
-    optional string es_cr = 97;
-    // Spanish (Dominican Republic)
-    optional string es_do = 98;
-    // Spanish (Ecuador)
-    optional string es_ec = 99;
-    // Spanish (El Salvador)
-    optional string es_sv = 100;
-    // Spanish (Guatemala)
-    optional string es_gt = 101;
-    // Spanish (Honduras)
-    optional string es_hn = 102;
-    // Spanish (Mexico)
-    optional string es_mx = 103;
-    // Spanish (Nicaragua)
-    optional string es_ni = 104;
-    // Spanish (Panama)
-    optional string es_pa = 105;
-    // Spanish (Paraguay)
-    optional string es_py = 106;
-    // Spanish (Peru)
-    optional string es_pe = 107;
-    // Spanish (Puerto Rico)
-    optional string es_pr = 108;
-    // Spanish (Spain)
-    optional string es = 109;
-    // Spanish (Uruguay)
-    optional string es_uy = 110;
-    // Spanish (Venezuela)
-    optional string es_ve = 111;
-    // Swedish
-    optional string sv = 112;
-    // Swedish (Finland)
-    optional string sv_fi = 113;
-    // Thai
-    optional string th = 114;
-    // Tsonga
-    optional string ts = 115;
-    // Tswana
-    optional string tn = 116;
-    // Turkish
-    optional string tr = 117;
-    // Ukrainian
-    optional string ua = 118;
-    // Urdu
-    optional string ur = 119;
-    // Venda
-    optional string ve = 120;
-    // Vietnamese
-    optional string vi = 121;
-    // Welsh
-    optional string cy = 122;
-    // Xhosa
-    optional string xh = 123;
-    // Yiddish
-    optional string ji = 124;
-    // Zulu
-    optional string zu = 125;
+	// Afrikaans
+	optional string af = 1;
+	// Albanian
+	optional string sq = 2;
+	// Arabic (Algeria)
+	optional string ar_dz = 3;
+	// Arabic (Bahrain)
+	optional string ar_bh = 4;
+	// Arabic (Egypt)
+	optional string ar_eg = 5;
+	// Arabic (Iraq)
+	optional string ar_iq = 6;
+	// Arabic (Jordan)
+	optional string ar_jo = 7;
+	// Arabic (Kuwait)
+	optional string ar_kw = 8;
+	// Arabic (Lebanon)
+	optional string ar_lb = 9;
+	// Arabic (Libya)
+	optional string ar_ly = 10;
+	// Arabic (Morocco)
+	optional string ar_ma = 11;
+	// Arabic (Oman)
+	optional string ar_om = 12;
+	// Arabic (Qatar)
+	optional string ar_qa = 13;
+	// Arabic (Saudi Arabia)
+	optional string ar_sa = 14;
+	// Arabic (Syria)
+	optional string ar_sy = 15;
+	// Arabic (Tunisia)
+	optional string ar_tn = 16;
+	// Arabic (U.A.E.)
+	optional string ar_ae = 17;
+	// Arabic (Yemen)
+	optional string ar_ye = 18;
+	// Basque
+	optional string eu = 19;
+	// Belarusian
+	optional string be = 20;
+	// Bulgarian
+	optional string bg = 21;
+	// Catalan
+	optional string ca = 22;
+	// Chinese (Hong Kong)
+	optional string zh_hk = 23;
+	// Chinese (PRC)
+	optional string zh_cn = 24;
+	// Chinese (Singapore)
+	optional string zh_sg = 25;
+	// Chinese (Taiwan)
+	optional string zh_tw = 26;
+	// Croatian
+	optional string hr = 27;
+	// Czech
+	optional string cs = 28;
+	// Danish
+	optional string da = 29;
+	// Dutch (Belgium)
+	optional string nl_be = 30;
+	// Dutch (Standard)
+	optional string nl = 31;
+	// English
+	optional string en = 32;
+	// English (Australia)
+	optional string en_au = 33;
+	// English (Belize)
+	optional string en_bz = 34;
+	// English (Canada)
+	optional string en_ca = 35;
+	// English (Ireland)
+	optional string en_ie = 36;
+	// English (Jamaica)
+	optional string en_jm = 37;
+	// English (New Zealand)
+	optional string en_nz = 38;
+	// English (South Africa)
+	optional string en_za = 39;
+	// English (Trinidad)
+	optional string en_tt = 40;
+	// English (United Kingdom)
+	optional string en_gb = 41;
+	// English (United States)
+	optional string en_us = 42;
+	// Estonian
+	optional string et = 43;
+	// Faeroese
+	optional string fo = 44;
+	// Farsi
+	optional string fa = 45;
+	// Finnish
+	optional string fi = 46;
+	// French (Belgium)
+	optional string fr_be = 47;
+	// French (Canada)
+	optional string fr_ca = 48;
+	// French (Luxembourg)
+	optional string fr_lu = 49;
+	// French (Standard)
+	optional string fr = 50;
+	// French (Switzerland)
+	optional string fr_ch = 51;
+	// Gaelic (Scotland)
+	optional string gd = 52;
+	// German (Austria)
+	optional string de_at = 53;
+	// German (Liechtenstein)
+	optional string de_li = 54;
+	// German (Luxembourg)
+	optional string de_lu = 55;
+	// German (Standard)
+	optional string de = 56;
+	// German (Switzerland)
+	optional string de_ch = 57;
+	// Greek
+	optional string el = 58;
+	// Hebrew
+	optional string he = 59;
+	// Hindi
+	optional string hi = 60;
+	// Hungarian
+	optional string hu = 61;
+	// Icelandic
+	optional string is = 62;
+	// Indonesian
+	optional string id = 63;
+	// Irish
+	optional string ga = 64;
+	// Italian (Standard)
+	optional string it = 65;
+	// Italian (Switzerland)
+	optional string it_ch = 66;
+	// Japanese
+	optional string ja = 67;
+	// Korean
+	optional string ko = 68;
+	// Korean (Johab)
+	//    optional string ko = 69;
+	// Kurdish
+	optional string ku = 70;
+	// Latvian
+	optional string lv = 71;
+	// Lithuanian
+	optional string lt = 72;
+	// Macedonian (FYROM)
+	optional string mk = 73;
+	// Malayalam
+	optional string ml = 74;
+	// Malaysian
+	optional string ms = 75;
+	// Maltese
+	optional string mt = 76;
+	// Norwegian
+	optional string no = 77;
+	// Norwegian (Bokmål)
+	optional string nb = 78;
+	// Norwegian (Nynorsk)
+	optional string nn = 79;
+	// Polish
+	optional string pl = 80;
+	// Portuguese (Brazil)
+	optional string pt_br = 81;
+	// Portuguese (Portugal)
+	optional string pt = 82;
+	// Punjabi
+	optional string pa = 83;
+	// Rhaeto-Romanic
+	optional string rm = 84;
+	// Romanian
+	optional string ro = 85;
+	// Romanian (Republic of Moldova)
+	optional string ro_md = 86;
+	// Russian
+	optional string ru = 87;
+	// Russian (Republic of Moldova)
+	optional string ru_md = 88;
+	// Serbian
+	optional string sr = 89;
+	// Slovak
+	optional string sk = 90;
+	// Slovenian
+	optional string sl = 91;
+	// Sorbian
+	optional string sb = 92;
+	// Spanish (Argentina)
+	optional string es_ar = 93;
+	// Spanish (Bolivia)
+	optional string es_bo = 94;
+	// Spanish (Chile)
+	optional string es_cl = 95;
+	// Spanish (Colombia)
+	optional string es_co = 96;
+	// Spanish (Costa Rica)
+	optional string es_cr = 97;
+	// Spanish (Dominican Republic)
+	optional string es_do = 98;
+	// Spanish (Ecuador)
+	optional string es_ec = 99;
+	// Spanish (El Salvador)
+	optional string es_sv = 100;
+	// Spanish (Guatemala)
+	optional string es_gt = 101;
+	// Spanish (Honduras)
+	optional string es_hn = 102;
+	// Spanish (Mexico)
+	optional string es_mx = 103;
+	// Spanish (Nicaragua)
+	optional string es_ni = 104;
+	// Spanish (Panama)
+	optional string es_pa = 105;
+	// Spanish (Paraguay)
+	optional string es_py = 106;
+	// Spanish (Peru)
+	optional string es_pe = 107;
+	// Spanish (Puerto Rico)
+	optional string es_pr = 108;
+	// Spanish (Spain)
+	optional string es = 109;
+	// Spanish (Uruguay)
+	optional string es_uy = 110;
+	// Spanish (Venezuela)
+	optional string es_ve = 111;
+	// Swedish
+	optional string sv = 112;
+	// Swedish (Finland)
+	optional string sv_fi = 113;
+	// Thai
+	optional string th = 114;
+	// Tsonga
+	optional string ts = 115;
+	// Tswana
+	optional string tn = 116;
+	// Turkish
+	optional string tr = 117;
+	// Ukrainian
+	optional string ua = 118;
+	// Urdu
+	optional string ur = 119;
+	// Venda
+	optional string ve = 120;
+	// Vietnamese
+	optional string vi = 121;
+	// Welsh
+	optional string cy = 122;
+	// Xhosa
+	optional string xh = 123;
+	// Yiddish
+	optional string ji = 124;
+	// Zulu
+	optional string zu = 125;
 }
 
 //enum Language {
