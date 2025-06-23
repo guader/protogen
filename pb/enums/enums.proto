@@ -23,11 +23,15 @@ message FileOptions {
 }
 
 message EnumOptions {
+	message ValidationFunction {
+		optional bool enable = 1;
+	}
 	message ErrMethod {
 		optional bool enable = 1;
 		optional bool withGrpc = 2;
 	}
-	optional ErrMethod errMethod = 1;
+	optional ValidationFunction validationFunction = 1;
+	optional ErrMethod errMethod = 2;
 }
 
 message EnumValueOptions {

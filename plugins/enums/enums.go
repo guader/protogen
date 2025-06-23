@@ -33,16 +33,6 @@ func Generate(plugin *protogen.Plugin) error {
 		g.P(pkg.RenderPackageComments(version.Version, "enums", file.Desc.Path()))
 		g.P("package ", file.GoPackageName)
 		g.P()
-		g.P(`import (
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)`)
-		g.P()
-		g.P(`var (
-	_ = codes.Code(0)
-	_ = status.Status{}
-)`)
-		g.P()
 
 		generateEnums(g, file.Enums)
 		generateMessages(g, file.Messages)
@@ -55,22 +45,25 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 		typ := e.GoIdent.GoName
 
 		// Generate enum slice.
-		g.P("var ", typ, "_enums = []", typ, "{")
-		for _, v := range e.Values {
-			g.P(v.GoIdent.GoName, ",")
-		}
-		g.P("}")
-		g.P()
+		//g.P("var ", typ, "_enums = []", typ, "{")
+		//for _, v := range e.Values {
+		//	g.P(v.GoIdent.GoName, ",")
+		//}
+		//g.P("}")
+		//g.P()
+
+		enumOpts := pkg.ProtoGetExtension[enums.EnumOptions](e.Desc.Options(), enums.E_EnumOptions)
 
 		// Generate validation function.
-		g.P("func (x ", typ, ") IsValid() bool {")
-		g.P("_, ok := ", typ, "_name[int32(x)]")
-		g.P("return ok")
-		g.P("}")
-		g.P()
+		if enumOpts.GetValidationFunction().GetEnable() {
+			g.P("func (x ", typ, ") IsValid() bool {")
+			g.P("_, ok := ", typ, "_name[int32(x)]")
+			g.P("return ok")
+			g.P("}")
+			g.P()
+		}
 
 		// Generate methods.
-		enumOpts := pkg.ProtoGetExtension[enums.EnumOptions](e.Desc.Options(), enums.E_EnumOptions)
 		if enumOpts.GetErrMethod().GetEnable() {
 			names := make([]string, 0, len(e.Values))
 			msgs := make([]string, 0, len(e.Values))
@@ -98,6 +91,11 @@ func generateEnums(g *protogen.GeneratedFile, es []*protogen.Enum) {
 			if !enumOpts.GetErrMethod().GetWithGrpc() {
 				continue
 			}
+
+			// Import packages.
+			_ = g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "google.golang.org/grpc/codes"})
+			_ = g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "google.golang.org/grpc/status"})
+
 			g.P("// GRPCStatus implements the interface defined in status.FromError.")
 			g.P("func (x ", typ, ") GRPCStatus() *status.Status {")
 			g.P("return status.New(codes.Code(x), x.Error())")
